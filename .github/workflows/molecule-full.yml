@@ -1,4 +1,24 @@
-# Ansible Role: mongodb
-# File: /.github/workflows/molecule-full.yml
-# Description: Managed by doc-sync workflow
+---
+name: Molecule Manual Run
 
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Molecule scenario to run (e.g., all, default, replicaset-psa-ubi9)"
+        required: true
+        default: "all"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Molecule
+        uses: gofrolist/ansible-molecule-action@v2
+        with:
+          molecule_options: "-v"
+          molecule_command: "test"
+          molecule_args: "--scenario-name ${{ github.event.inputs.scenario }}"

@@ -1,0 +1,12 @@
+---
+# File: roles/mongod/molecule/default/prepare.yml
+
+- name: Prepare
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Install sudo
+      ansible.builtin.dnf:
+        name: sudo
+        state: present
+      when: ansible_os_family == 'RedHat'

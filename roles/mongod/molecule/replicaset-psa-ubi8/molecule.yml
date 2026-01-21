@@ -1,0 +1,81 @@
+# Ansible Role: mongodb
+# File: /molecule/replicaset-psa-ubi8/molecule.yml
+# Description: Managed by doc-sync workflow
+
+---
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+scenario:
+  name: replicaset-psa-ubi8
+dependency:
+  name: galaxy
+driver:
+  name: docker
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_ROLES_PATH: ../../
+  inventory:
+    host_vars:
+      test-ubi8-01-v2:
+        ansible_python_interpreter: /usr/bin/python3.9
+      test-ubi8-02-v2:
+        ansible_python_interpreter: /usr/bin/python3.9
+      test-ubi8-03-v2:
+        ansible_python_interpreter: /usr/bin/python3.9
+verifier:
+  name: ansible
+platforms:
+  - name: test-ubi8-01-v2
+    hostname: test-ubi8-01-v2
+    image: registry.access.redhat.com/ubi8/ubi:latest
+    privileged: true
+    pull: true
+    command: "/usr/sbin/init"
+    volumes:
+      - "/s../../rolescgroup:/sys/fs/cgroup:rw"
+    tmpfs:
+      - /run
+      - /tmp
+    tty: true
+    environment:
+      container: docker
+    pre_build_image: true
+    networks:
+      - name: test_network
+  - name: test-ubi8-02-v2
+    hostname: test-ubi8-02-v2
+    image: registry.access.redhat.com/ubi8/ubi:latest
+    privileged: true
+    pull: true
+    command: "/usr/sbin/init"
+    volumes:
+      - "/s../../rolescgroup:/sys/fs/cgroup:rw"
+    tmpfs:
+      - /run
+      - /tmp
+    tty: true
+    environment:
+      container: docker
+    pre_build_image: true
+    networks:
+      - name: test_network
+  - name: test-ubi8-03-v2
+    hostname: test-ubi8-03-v2
+    image: geerlingguy/docker-ubi8-ansible:latest
+    privileged: true
+    pull: true
+    command: "/usr/sbin/init"
+    volumes:
+      - "/s../../rolescgroup:/sys/fs/cgroup:rw"
+    tmpfs:
+      - /run
+      - /tmp
+    tty: true
+    environment:
+      container: docker
+    pre_build_image: true
+    networks:
+      - name: test_network

@@ -1,0 +1,10 @@
+# Ansible Role: mongodb
+# File: /playbooks/install_mongodb.yml
+# Description: Managed by doc-sync workflow
+
+---
+- name: Install | MongoDB
+  hosts: all
+  become: true
+  roles:
+    - role: mongod

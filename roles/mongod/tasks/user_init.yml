@@ -1,0 +1,37 @@
+# Ansible Role: mongodb
+# File: /tasks/user_init.yml
+# Description: Managed by doc-sync workflow
+
+---
+- name: user_init | set temporary conf
+  ansible.builtin.template:
+    src: mongod_init.conf.j2
+    dest: /etc/mongod.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: user_init | start mongo
+  ansible.builtin.service:
+    name: mongod
+    state: started
+
+- name: user_init | create users admin, adminuser and backup
+  community.mongodb.mongodb_user:
+    database: admin
+    name: "{{ item.name }}"
+    password: "{{ item.pass }}"
+    roles: "{{ item.role }}"
+    login_host: 127.0.0.1
+    login_port: "{{ mongodb_net.port }}"
+  # no_log: true
+  loop:
+    - name: admin
+      pass: "{{ mongodb_admin_pass }}"
+      role: root
+    - name: "{{ mongodb_adminuser_name }}"
+      pass: "{{ mongodb_adminuser_pass }}"
+      role: userAdminAnyDatabase
+    - name: "{{ mongodb_backup.user }}"
+      pass: "{{ mongodb_backup.pass }}"
+      role: backup

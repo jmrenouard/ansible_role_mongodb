@@ -1,0 +1,55 @@
+# Ansible Role: mongodb
+# File: /tasks/backup.yml
+# Description: Managed by doc-sync workflow
+
+---
+- name: backup | set fact for first secondary in play
+  ansible.builtin.set_fact:
+    backup_on_host: "{{ item }}"
+  loop: "{{ play_hosts }}"
+  when:
+    - host_count != '1'
+    - backup_on_host is undefined
+    - hostvars[item].mongodb_replication_role == 'secondary'
+  run_once: true
+
+- block:
+    - name: backup | ensure backup path exists
+      ansible.builtin.file:
+        path: "{{ mongodb_backup.path }}"
+        owner: "{{ mongodb_backup.owner }}"
+        group: "{{ mongodb_backup.group }}"
+        mode: "{{ mongodb_backup.mode }}"
+        state: "directory"
+
+    - name: backup | set job in cron
+      ansible.builtin.cron:
+        name: "{{ item.name }}"
+        minute: "{{ mongodb_backup.minute }}"
+        hour: "{{ mongodb_backup.hour }}"
+        day: "{{ mongodb_backup.day }}"
+        job: "{{ item.job }}"
+      no_log: true
+      loop:
+        - name: "remove mongodb old backup files"
+          minute: "{{ mongodb_backup.minute | int - 1 }}"
+          job: "/usr/bin/find {{ mongodb_backup.path }}/ -maxdepth 1 -type d
+            -mmin +$((60*{{ mongodb_backup.retention }})) -exec rm -rf {} \\+"
+
+        - name: "create backup of mongo"
+          minute: "{{ mongodb_backup.minute }}"
+          job: "for dbs in {{ mongodb_backup.dbs | join(' ') }} ; do
+            mongodump --out
+            {{ mongodb_backup.path }}/mongodb_backup_$(date '+\\%Y-\\%m-\\%d')
+            --db $dbs
+            --port {{ mongodb_net.port }}
+            --authenticationDatabase admin
+            --username '{{ mongodb_backup.user }}'
+            --password '{{ mongodb_backup.pass }}'
+            && ln -sf
+            {{ mongodb_backup.path }}/mongodb_backup_$(date '+\\%Y-\\%m-\\%d')
+            {{ mongodb_backup.path }}/latest ; done"
+
+  when: >-
+    host_count == '1' or
+    backup_on_host is defined and inventory_hostname == backup_on_host

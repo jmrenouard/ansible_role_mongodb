@@ -1,0 +1,103 @@
+# Ansible Role: mongodb
+# File: /tasks/keyfile.yml
+# Description: Managed by doc-sync workflow
+
+---
+- name: keyfile | set fact to copy keyfile from a host
+  ansible.builtin.set_fact:
+    keyfile_host: "{{ item }}"
+  when: hostvars[item].mongodb_primary
+  run_once: true
+  loop: "{{ ansible_play_hosts }}"
+
+- name: keyfile | stat
+  ansible.builtin.stat:
+    path: "{{ mongodb_security.keyFile }}"
+  register: keyfile_check
+
+- name: keyfile | set fact
+  ansible.builtin.set_fact:
+    keyfile_fact: "{{ keyfile_check.stat.exists }}"
+
+- name: keyfile | block to check which host(s) have the file
+  block:
+    - name: keyfile | create dict of keyfile check
+      ansible.builtin.set_fact:
+        keyfile_status: "{{ dict(keys|zip(values)) }}"
+      vars:
+        keys: "{{ ansible_play_hosts }}"
+        values: "{{ ansible_play_hosts |
+          map('extract', hostvars, ['keyfile_fact'])
+          | list }}"
+
+    - name: keyfile | set fact when no host has the file
+      ansible.builtin.set_fact:
+        keyfile_none: true
+      when: keyfile_status.values() | list is not any
+
+    - name: keyfile | set fact when a host does not has the file
+      ansible.builtin.set_fact:
+        keyfile_all: false
+      when: keyfile_status.values() | list is any
+
+    - name: keyfile | set fact when all hosts have the files
+      ansible.builtin.set_fact:
+        keyfile_all: true
+      when: keyfile_status.values() | list is all
+
+  run_once: true
+
+- name: keyfile | block to copy keyfile when none has one
+  block:
+    - name: keyfile | create when none has a keyfile
+      ansible.builtin.command: >-
+        openssl rand -base64 741 > {{ mongodb_security.keyFile }} ;
+        chmod 400 {{ mongodb_security.keyFile }} ;
+        chown mongod: {{ mongodb_security.keyFile }}
+      register: new_keyfile
+      when: mongodb_primary
+      changed_when: true
+
+    - name: keyfile | fetch keyfile
+      ansible.builtin.fetch:
+        src: "{{ mongodb_security.keyFile }}"
+        flat: true
+        dest: /tmp/mongodb_keyfile
+      delegate_to: "{{ keyfile_host }}"
+
+    - name: keyfile | copy required files to remaining hosts
+      ansible.builtin.copy:
+        src: /tmp/mongodb_keyfile
+        dest: "{{ mongodb_security.keyFile }}"
+        mode: "0400"
+        owner: mongod
+        group: mongod
+
+  when: keyfile_none is defined
+
+- name: keyfile | block to copy keyfile when at least one is missing
+  block:
+    - name: keyfile | fetch keyfile
+      ansible.builtin.fetch:
+        src: "{{ mongodb_security.keyFile }}"
+        flat: true
+        dest: /tmp/mongodb_keyfile
+      delegate_to: "{{ keyfile_host }}"
+
+    - name: keyfile | copy required files to remaining hosts
+      ansible.builtin.copy:
+        src: /tmp/mongodb_keyfile
+        dest: "{{ mongodb_security.keyFile }}"
+        mode: "0400"
+        owner: mongod
+        group: mongod
+
+  when: keyfile_all is defined and not keyfile_all
+
+- name: keyfile | ensure absence from localhost
+  ansible.builtin.file:
+    path: /tmp/mongodb_keyfile
+    state: absent
+  run_once: true
+  delegate_to: localhost
+  become: false

@@ -1,0 +1,41 @@
+# Ansible Role: mongodb
+# File: /tasks/supervisor.yml
+# Description: Supervisor fallback for MongoDB when systemd is missing
+
+---
+- name: Supervisor | Install
+  ansible.builtin.package:
+    name: supervisor
+    state: present
+
+- name: Supervisor | Ensure directory exists
+  ansible.builtin.file:
+    path: /etc/supervisor/conf.d
+    state: directory
+    mode: "0755"
+
+- name: Supervisor | Set config
+  ansible.builtin.template:
+    src: mongodb_supervisor.conf.j2
+    dest: /etc/supervisor/conf.d/mongod.conf
+    owner: root
+    group: root
+    mode: "0644"
+  register: mongodb_supervisor_conf
+
+- name: Supervisor | Check if process is running
+  ansible.builtin.command: pgrep supervisord
+  register: mongodb_supervisor_check
+  changed_when: false
+  ignore_errors: true
+
+- name: Supervisor | Start process if missing
+  ansible.builtin.command: supervisord -c /etc/supervisord.conf
+  when: mongodb_supervisor_check.rc != 0
+
+- name: Supervisor | Update and start mongod
+  ansible.builtin.shell: |
+    supervisorctl update
+    supervisorctl start mongod
+  changed_when: false
+  when: mongodb_supervisor_conf.changed or mongodb_conf_set.changed

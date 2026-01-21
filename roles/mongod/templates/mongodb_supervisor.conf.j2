@@ -1,0 +1,7 @@
+[program:mongod]
+command=/usr/bin/mongod --config /etc/mongod.conf
+user=mongod
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/mongodb/mongod.supervisor.err.log
+stdout_logfile=/var/log/mongodb/mongod.supervisor.out.log

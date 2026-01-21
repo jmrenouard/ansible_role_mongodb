@@ -1,0 +1,19 @@
+# Ansible Role: mongodb
+# File: /playbooks/scale.yml
+# Description: Managed by doc-sync workflow
+
+---
+- name: Scale | MongoDB Replicaset
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Scale | Warning
+      ansible.builtin.debug:
+        msg: "Scaling is currently in development and may not be fully functional."
+
+    # Future implementation for scaling...
+    # - If arbiter is present in configuration and on system
+    #       - remove arbiter from cluster
+    # - Add new secondary or secondaries
+    # - Add arbiter if configured

@@ -1,0 +1,25 @@
+# Ansible Role: mongodb
+# File: /tasks/numa.yml
+# Description: Managed by doc-sync workflow
+
+---
+- name: numa | install numactl
+  ansible.builtin.dnf:
+    name: numactl
+    state: present
+
+- name: numa | set zone reclaim mode
+  ansible.builtin.sysctl:
+    name: vm.zone_reclaim_mode
+    value: "0"
+    state: present
+    sysctl_set: true
+    reload: true
+  when: ansible_facts['virtualization_type'] != 'docker'
+
+- name: numa | service file
+  ansible.builtin.lineinfile:
+    path: /usr/lib/systemd/system/mongod.service
+    regexp: "^ExecStart="
+    line: "ExecStart=/usr/bin/numactl --interleave=all /usr/bin/mongod $OPTIONS"
+  notify: systemd reload

@@ -1,0 +1,55 @@
+# Ansible Role: mongodb
+# File: /playbooks/reset.yml
+# Description: Managed by doc-sync workflow
+
+---
+- name: Reset | MongoDB environment
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Reset | repo gpg key
+      ansible.builtin.rpm_key:
+        key: https://www.mongodb.org/static/pgp/server-{{ mongodb_version | default('7.0') }}.asc
+        state: absent
+
+    - name: Reset | remove mongo from system
+      ansible.builtin.dnf:
+        name: "mongodb-*"
+        state: absent
+
+    - name: Reset | remove mongo related files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/etc/yum.repos.d/mongodb.repo"
+        - "/etc/mongod.conf"
+        - "/var/lib/mongo"
+        - "/var/log/mongodb"
+        - "{{ mongodb_systemlog.path | default('/var/log/mongodb/mongod.log') }}"
+        - "{{ mongodb_storage.dbPath | default('/var/lib/mongo') }}"
+        - "{{ mongodb_security.keyFile | default('/etc/mongodb.key') }}"
+        - "/etc/systemd/system/disable-transparent-hugepages.service"
+        - "/etc/tuned/virtual-guest-no-thp"
+        - "{{ mongodb_backup.path | default('/backup/mongodb') }}"
+        - "/usr/lib/systemd/system/mongod.service"
+
+    - name: Reset | remove mongod user
+      ansible.builtin.user:
+        name: mongod
+        state: absent
+        remove: true
+      ignore_errors: true
+
+    - name: Reset | remove backup scripts
+      ansible.builtin.cron:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "remove mongodb old backup files"
+        - "create backup of mongo"
+
+    - name: Reset | reload daemons
+      ansible.builtin.systemd:
+        daemon_reload: true

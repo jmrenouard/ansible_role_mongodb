@@ -19,11 +19,11 @@
 
     - name: update | set config
       template:
-        src: mongod.conf.j2
+        src: ../roles/mongod/templates/mongod.conf.j2
         dest: /etc/mongod.conf
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: update | ensure mongod is started and enabled
       service:
@@ -69,11 +69,11 @@
 
     - name: update | set config on arbiter
       template:
-        src: mongod.conf.j2
+        src: ../roles/mongod/templates/mongod.conf.j2
         dest: /etc/mongod.conf
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
       when: mongodb_arbiter
 
     - name: update | ensure mongod is started and enabled on arbiter
@@ -85,7 +85,7 @@
 
     - name: update | pause 20s after a restart of mongo
       pause:
-        seconds: '20'
+        seconds: "20"
       when: mongodb_arbiter
 
     - name: update | ensure cluster health is ok
@@ -139,11 +139,11 @@
 
     - name: update | set config on secondary
       template:
-        src: mongod.conf.j2
+        src: ../roles/mongod/templates/mongod.conf.j2
         dest: /etc/mongod.conf
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
       when: mongodb_secondary
 
     - name: update | ensure mongod is started and enabled on secondary
@@ -155,7 +155,7 @@
 
     - name: update | pause 20s after a restart of
       pause:
-        seconds: '20'
+        seconds: "20"
 
     - name: update | ensure cluster health is ok
       community.mongodb.mongodb_status:
@@ -181,7 +181,7 @@
     - name: update | copy step content
       copy:
         dest: /root/mongodb_primary_stepdown.js
-        mode: '0770'
+        mode: "0770"
         owner: root
         group: root
         content: |
@@ -199,7 +199,6 @@
     - name: update | make primary a secondary
       shell: mongo < /root/mongodb_primary_stepdown.js
       when: set_primary_stepdown.changed
-      
     - name: update | remove stepdown file
       file:
         state: absent
@@ -212,11 +211,11 @@
 
     - name: update | set config on primary
       template:
-        src: mongod.conf.j2
+        src: ../roles/mongod/templates/mongod.conf.j2
         dest: /etc/mongod.conf
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: update | ensure mongod is started and enabled on primary
       service:
@@ -226,7 +225,7 @@
 
     - name: update | pause 20s after a restart of
       pause:
-        seconds: '20'
+        seconds: "20"
 
     - name: update | ensure cluster health is ok
       community.mongodb.mongodb_status:

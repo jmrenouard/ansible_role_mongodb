@@ -11,6 +11,7 @@ trigger: always_on
 3. **IDEMPOTENCY:** All Ansible tasks MUST be idempotent. Use `changed_when` or `failed_when` for `shell`/`command` modules.
 4. **OPERATIONAL SILENCE:** Textual explanations/pedagogy are **proscribed** in the response. Only code blocks, commands, and technical results.
 5. **NATIVE MODULES:** Use native Ansible modules over `shell` or `command` whenever possible.
+6. **DOCKER RESILIENCE:** If Docker daemon issues occur (stuck containers, kill failures), run `docker-clean`. If missing, install it.
 
 ## 2. Output & Restitution Format
 

@@ -1,15 +1,73 @@
-1.1 2026-01-21
- - chore: align architecture-audit, ideate, maintenance, and doc-sync workflows with Ansible role structure.
- - chore: remove redundant /src references in doc-sync.
- - chore: integrate Molecule-specific commands into maintenance workflow.
+# @Changelog
 
-1.0 2026-01-21
- - Align versioning standards to X.Y style.
- - Initial governance and rule synchronization.
- - feat: add agent rules for Ansible best practices.
- - feat: synchronize Changelog with meta/main.yml.
- - feat: add GitHub Actions for Molecule testing using gofrolist/ansible-molecule-action (CI and manual dispatch).
-  - chore: rename cluster scenarios to replicaset-psa and 5-node scenarios to replicaset-pss.
- - feat: add 5-node MongoDB Replica Set scenarios for UBI 8 and UBI 9.
- - fix: resolve systemd/cgroupv2 crashes on EL 9 scenarios by switching to UBI 9 without systemd.
- - fix: upgrade python to 3.9 in UBI 8 scenarios to support modern ansible-core.
+## 1.4.3 (2026-01-22)
+
+* feat: implement supervisor fallback for MongoDB when systemd is missing
+* feat: add supervisor configuration template and automated detection logic
+* feat: configure Supervisor in Docker laboratory to manage SSH and MongoDB services
+* chore: update Dockerfile with robust SSH key configuration and explicit Supervisor paths
+* fix: ensure Docker laboratory `run` target depends on `network` existence in Makefile
+* chore: remove obsolete systemd boot flags (`--privileged`, cgroup, tmpfs) from Makefile
+* feat: refactor `reset.yml` and `scale.yml` tasks into independent playbooks in `playbooks/`
+
+## 1.4.2 (2026-01-21)
+
+* feat: transition Docker laboratory from Supervisor to systemd for authentic service management
+* chore: update Dockerfile and Makefile for systemd boot (privileged mode, cgroup mounts)
+* docs: add SSH aliases for rapid node access (m1, m2, m3)
+
+## 1.4.1 (2026-01-21)
+
+* fix: ensure mongod is started and reachable before cluster status checks in cluster.yml
+
+## 1.4 (2026-01-21)
+
+* fix: skip transparent hugepages (THP) kernel settings when running in Docker
+* fix: skip NUMA sysctl configuration when running in Docker to avoid permission errors
+* chore: refactor all tasks to use ansible_facts['virtualization_type'] for FQCN compliance
+
+## 1.3 (2026-01-21)
+
+* feat: implement unified handlers for systemd reload and mongod restart.
+* feat: refactor NUMA management to use native `ansible.builtin.sysctl` module.
+* feat: ensure FQCN compliance across all task files.
+* fix: improve service management in `cluster.yml` and `config.yml`.
+* chore: add `prepare.yml` to Molecule default scenario for environment readiness.
+
+## 1.2 (2026-01-21)
+
+* feat: move core role components and `molecule` tests to `roles/mongod` for multi-role clarity.
+* feat: add `ansible.cfg` with explicit `roles_path` for consistent role discovery.
+* fix: update `ansible.cfg` to use modern `ansible.builtin.default` callback with `result_format=yaml`.
+* feat: add `playbooks/install_mongodb.yml` for standard role deployment.
+* chore: unify Molecule tests using official RHEL UBI 8 and UBI 9 images.
+* chore: reduce Ansible verbosity to `-v` across all Molecule configurations and scripts.
+* feat: implement functional GitHub Actions for Molecule (CI and manual dispatch).
+* fix: update `run_molecule.sh` to use the role's virtual environment.
+* chore: add Docker resilience rule to governance (automatic `docker-clean` on failure).
+* feat: add `playbooks/reset.yml` for environment reset.
+* docs: expand README.md with detailed technical chapters (SSL, KMIP, User Management, System Prep).
+* docs: create `documentation/inventory_examples.md` with comprehensive topology examples.
+* feat: add UBI8 Docker fleet environment in `docker/` for local Ansible testing.
+* fix: restore `ansible.cfg` for correct role discovery within laboratory.
+* fix: ensure `run_install.sh` sources the project virtual environment.
+
+## 1.1 (2026-01-21)
+
+* chore: align architecture-audit, ideate, maintenance, and doc-sync workflows with Ansible role structure.
+* chore: remove redundant /src references in doc-sync.
+* chore: integrate Molecule-specific commands into maintenance workflow.
+* fix: ensure Molecule tests use the root role by setting ANSIBLE_ROLES_PATH and removing local .ansible directory.
+* test: full validation of `default` and `replicaset-psa-ubi9` scenarios on UBI 9.
+
+## 1.0 (2026-01-21)
+
+* Align versioning standards to X.Y style.
+* Initial governance and rule synchronization.
+* feat: add agent rules for Ansible best practices.
+* feat: synchronize Changelog with meta/main.yml.
+* feat: add GitHub Actions for Molecule testing using gofrolist/ansible-molecule-action (CI and manual dispatch).
+* chore: rename cluster scenarios to replicaset-psa and 5-node scenarios to replicaset-pss.
+* feat: add 5-node MongoDB Replica Set scenarios for UBI 8 and UBI 9.
+* fix: resolve systemd/cgroupv2 crashes on EL 9 scenarios by switching to UBI 9 without systemd.
+* fix: upgrade python to 3.9 in UBI 8 scenarios to support modern ansible-core.

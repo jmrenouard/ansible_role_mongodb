@@ -1,4 +1,23 @@
-# Ansible Role: mongodb
-# File: /.github/workflows/molecule-default.yml
-# Description: Managed by doc-sync workflow
+---
+name: Molecule CI (Default)
 
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Molecule (default scenario)
+        uses: gofrolist/ansible-molecule-action@v2
+        with:
+          molecule_options: "-v"
+          molecule_command: "test"
+          molecule_args: "-s default"
+          molecule_working_dir: "roles/mongod"

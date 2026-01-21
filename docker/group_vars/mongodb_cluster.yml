@@ -1,0 +1,34 @@
+---
+mongodb_version: "7.0"
+mongodb_major_version: "7.0"
+mongodb_edition: enterprise
+mongodb_repo: true
+
+# Use system python for DNF compatibility on UBI8
+ansible_python_interpreter: /usr/libexec/platform-python
+
+mongodb_replication:
+  replSetName: rs0
+
+# PSS Topology identification
+mongodb_primary: "{{ 'primary' in mongodb_replication_role }}"
+
+# Administrative credentials
+mongodb_admin_pass: "admin123"
+mongodb_adminuser_name: "admin"
+mongodb_adminuser_pass: "admin123"
+
+# Backup credentials (needed to pass role assertions)
+mongodb_backup:
+  enabled: false
+  pass: "backup_password_123"
+
+# Networking
+mongodb_net:
+  bindIp: 0.0.0.0
+  port: 27017
+
+# Security (Auto-managed by role, but defined for assertion)
+mongodb_security:
+  authorization: enabled
+  keyFile: /etc/mongodb.key

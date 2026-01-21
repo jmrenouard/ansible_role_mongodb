@@ -13,10 +13,10 @@ You are a specialized agent for synchronizing documentation with the Ansible rol
 
 ## Context
 
-- The project root IS the role itself.
-- Source files are in `tasks/`, `defaults/`, `vars/`, `handlers/`, and `templates/`.
+- The project root contains the `roles/mongod` directory.
+- Source files are in `roles/mongod/tasks/`, `roles/mongod/defaults/`, `roles/mongod/vars/`, `roles/mongod/handlers/`, and `roles/mongod/templates/`.
 - Documentation is primarily in `README.md`.
-- Versioning is in `meta/main.yml`.
+- Versioning is in `roles/mongod/meta/main.yml`.
 
 ## Task
 

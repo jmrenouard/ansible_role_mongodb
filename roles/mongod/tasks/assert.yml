@@ -1,0 +1,93 @@
+# Ansible Role: mongodb
+# File: /tasks/assert.yml
+# Description: Managed by doc-sync workflow
+
+---
+- name: Assert | set fact for amount of hosts
+  ansible.builtin.set_fact:
+    host_count: "{{ ansible_play_hosts | length }}"
+
+- name: Assert | that uneven amount of hosts are set
+  ansible.builtin.assert:
+    that: "{{ host_count | int % 2 != 0 }}"
+
+- name: Assert | that naming is set correctly for replication roles
+  ansible.builtin.assert:
+    that: |
+      mongodb_replication_role == 'arbiter' or
+      mongodb_replication_role == 'secondary' or
+      mongodb_replication_role == 'primary'
+  when: host_count != '1'
+
+- name: Assert | set fact for roles
+  ansible.builtin.set_fact:
+    mongodb_primary: "{{ mongodb_replication_role == 'primary' }}"
+    mongodb_secondary: "{{ mongodb_replication_role == 'secondary' }}"
+    mongodb_arbiter: "{{ mongodb_replication_role == 'arbiter' }}"
+
+- name: Assert | several items for a single host
+  ansible.builtin.assert:
+    that:
+      - mongodb_replication_role == ''
+      - mongodb_security.keyFile is not defined
+  when: host_count == '1'
+
+- name: Assert | that passwords are changed
+  ansible.builtin.assert:
+    that:
+      - mongodb_admin_pass != 'change_me'
+      - mongodb_adminuser_pass != 'change_me'
+      - mongodb_backup.pass != 'change_me'
+
+- block:
+    - name: assert | create dictionary of bootstrappers
+      ansible.builtin.set_fact:
+        primaries: "{{ dict(keys|zip(values)) }}"
+      vars:
+        keys: "{{ ansible_play_hosts }}"
+        values: "{{ ansible_play_hosts|
+          map('extract', hostvars, ['mongodb_primary']) |
+          list }}"
+
+    - name: Assert | create list of bootstrappers
+      ansible.builtin.set_fact:
+        primary_list: "{{ primaries | dict2items |
+          selectattr('value') |
+          map(attribute='key') |
+          list }}"
+
+    - name: Assert | that there is one primary
+      ansible.builtin.assert:
+        that: primary_list | length == 1
+
+    - name: assert | create dictionary of bootstrappers
+      ansible.builtin.set_fact:
+        arbiters: "{{ dict(keys|zip(values)) }}"
+      vars:
+        keys: "{{ ansible_play_hosts }}"
+        values: "{{ ansible_play_hosts|
+          map('extract', hostvars, ['mongodb_arbiter']) |
+          list }}"
+
+    - name: Assert | create list of arbiters
+      ansible.builtin.set_fact:
+        arbiter_list: "{{ arbiters | dict2items |
+          selectattr('value') |
+          map(attribute='key') |
+          list }}"
+
+    - name: Assert | that there is one or no arbiter
+      ansible.builtin.assert:
+        that: (arbiter_list | length == 1) or (arbiter_list | length == 0)
+
+    - name: Assert | several asserts for when cluster is enabled
+      ansible.builtin.assert:
+        that:
+          - mongodb_replication_role != ''
+          - mongodb_replication.replSetName | length > 0
+          - mongodb_security.keyFile | length > 0
+          - mongodb_primary is defined
+          - mongodb_secondary is defined
+
+  run_once: true
+  when: host_count != '1'

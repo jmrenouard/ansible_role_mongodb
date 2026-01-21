@@ -1,0 +1,27 @@
+# Ansible Role: mongodb
+# File: /meta/main.yml
+# Description: Managed by doc-sync workflow
+
+---
+galaxy_info:
+  author: Kevin Csuka
+  description: Ansible role to setup and configure MongoDB
+  namespace: kcsuka
+  role_name: mongodb
+  version: 1.4.3
+  license: Apache License, Version 2.0
+  min_ansible_version: "2.9"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+  galaxy_tags:
+    - database
+    - mongodb
+    - mongo
+    - cluster
+    - arbiter
+    - system
+    - nosql
+
+dependencies: []
