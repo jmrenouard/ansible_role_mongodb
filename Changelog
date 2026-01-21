@@ -1,0 +1,7 @@
+1.0 2026-01-21
+ - Align versioning standards to X.Y style.
+ - Initial governance and rule synchronization.
+ - feat: add agent rules for Ansible best practices.
+ - feat: synchronize Changelog with meta/main.yml.
+ - feat: add GitHub Actions for Molecule testing using gofrolist/ansible-molecule-action (CI and manual dispatch).
+  - fix: upgrade python to 3.9 in UBI 8 scenarios to support modern ansible-core.
