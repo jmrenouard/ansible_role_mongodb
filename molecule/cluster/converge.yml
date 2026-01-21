@@ -10,13 +10,18 @@
       dnf:
         name: iproute
 
+    - name: Set mongodb_use_template_for_hosts
+      set_fact:
+        mongodb_use_template_for_hosts: "{{ mongodb_use_template_for_hosts | default(true) }}"
+
     - name: set /etc/hosts file
       template:
         src: hosts.j2
         dest: /etc/hosts
-        mode: '0644'
+        mode: "0644"
         owner: root
         group: root
+      when: mongodb_use_template_for_hosts | bool
 
 - name: Converge
   hosts:
@@ -25,4 +30,4 @@
     - test-multi-03
   any_errors_fatal: true
   roles:
-    - ../ansible_role_mongodb
+    - role: ../..

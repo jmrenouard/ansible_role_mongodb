@@ -1,7 +1,13 @@
+1.1 2026-01-21
+ - chore: align architecture-audit, ideate, maintenance, and doc-sync workflows with Ansible role structure.
+ - chore: remove redundant /src references in doc-sync.
+ - chore: integrate Molecule-specific commands into maintenance workflow.
+
 1.0 2026-01-21
  - Align versioning standards to X.Y style.
  - Initial governance and rule synchronization.
  - feat: add agent rules for Ansible best practices.
  - feat: synchronize Changelog with meta/main.yml.
  - feat: add GitHub Actions for Molecule testing using gofrolist/ansible-molecule-action (CI and manual dispatch).
-  - fix: upgrade python to 3.9 in UBI 8 scenarios to support modern ansible-core.
+  - fix: resolve systemd/cgroupv2 crashes on EL 9 scenarios by switching to UBI 9 without systemd.
+ - fix: upgrade python to 3.9 in UBI 8 scenarios to support modern ansible-core.
