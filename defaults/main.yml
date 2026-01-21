@@ -1,69 +1,73 @@
+# Ansible Role: mongodb
+# File: /defaults/main.yml
+# Description: Managed by doc-sync workflow
+
 ---
-mongo_repo: true
-mongo_version: 5.0
-mongo_edition: org  # org or enterprise
-mongo_pymongo_version: 4.7.2
+mongodb_repo: true
+mongodb_version: 5.0
+mongodb_edition: org  # org or enterprise
+mongodb_pymongo_version: 4.7.2
 
 # Apply production recommendations, see readme
-mongo_thp: true
-mongo_numa: true
+mongodb_thp: true
+mongodb_numa: true
 
-mongo_admin_pass: 'change_me'
-mongo_adminuser_name: adminuser
-mongo_adminuser_pass: 'change_me'
+mongodb_admin_pass: 'change_me'
+mongodb_adminuser_name: adminuser
+mongodb_adminuser_pass: 'change_me'
 
 # --- Defaults for mongod.conf
 # See readme
 
-mongo_net:
+mongodb_net:
   bindIp: 0.0.0.0
   port: 27017
 
-mongo_systemlog:
+mongodb_systemlog:
   destination: file
   logAppend: true
   path: /var/log/mongodb/mongod.log
 
-mongo_storage:
+mongodb_storage:
   dbPath: /var/lib/mongo
   journal:
     enabled: true
 
 # You should not change the pidfile location
-mongo_processmanagement:
+mongodb_processmanagement:
   fork: true
   pidFilePath: /var/run/mongodb/mongod.pid
   timeZoneInfo: /usr/share/zoneinfo
 
 # The keyfile is automatically generated
-mongo_security: ''
+mongodb_security: ''
 
-mongo_operationprofiling: ''
+mongodb_operationprofiling: ''
 
-mongo_replication: ''
+mongodb_replication: ''
 
-mongo_sharding: ''
+mongodb_sharding: ''
 
-mongo_auditlog: ''
+mongodb_auditlog: ''
 
-mongo_snmp: ''
+mongodb_snmp: ''
 
-mongo_custom_cnf: ''
+mongodb_custom_cnf: ''
 
 # ---
 
 # When replication is desired, the value should either be
 # primary, secondary or aribter
 # Ensure to include a valid number of nodes, see readme
-mongo_replication_role: ''
+mongodb_replication_role: ''
 
 # Define databases and users
 # See readme for examples
-mongo_user: []
+mongodb_user: []
 
 # Backup via cronjob, executed with mongodump
 # When there is replication, only active on one secondary
-mongo_backup:
+mongodb_backup:
   enabled: true
   dbs:
     - admin
@@ -71,7 +75,7 @@ mongo_backup:
     - local
   user: backup
   pass: change_me
-  path: /var/lib/mongo_backups
+  path: /var/lib/mongodb_backups
   owner: mongod
   group: mongod
   mode: '0660'
@@ -81,7 +85,7 @@ mongo_backup:
   retention: 46  # in hours
 
 # Restart mongo after a config change
-mongo_restart_config: true
+mongodb_restart_config: true
 
 # Amount of seconds before the next mongo instance will be restarted
-mongo_restart_seconds: 15
+mongodb_restart_seconds: 15

@@ -1,2 +1,6 @@
+# Ansible Role: mongodb
+# File: /molecule/replicaset-pss-ubi8/host_vars/test-ubi8-01.yml
+# Description: Managed by doc-sync workflow
+
 ---
-mongo_replication_role: arbiter
+mongodb_replication_role: arbiter

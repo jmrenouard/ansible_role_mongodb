@@ -9,7 +9,7 @@ A role for Ubuntu can be [found here](https://github.com/csuka/ansible_role_mong
 
 * Applies recommended production notes, e.g. [numa](https://docs.mongodb.com/manual/administration/production-notes/#configuring-numa-on-linux) and [disables transparent hugepages](https://docs.mongodb.com/manual/tutorial/transparent-huge-pages/)
 * Bootstrapping a cluster in a PSA architecture (primary, secondary, arbiter)
-   * includes cluster verification
+  * includes cluster verification
 * Secures connection by encrypting traffic via a keyfile, auto generated
 * Install either Community or the Enterprise edition
 * Easily to configure, with a future proof configuration method
@@ -36,9 +36,9 @@ Please follow this readme carefully. As a hint, for valid a configuration, see t
 The version and edition can be set. By default, the official mongodb repository and gpg key are added.
 
 ```yaml
-mongo_repo: true
-mongo_version: 5.0
-mongo_edition: org  # or enterprise
+mongodb_repo: true
+mongodb_version: 5.0
+mongodb_edition: org  # or enterprise
 ```
 
 ## Recommendations
@@ -49,18 +49,18 @@ This role includes several configuration recommendations, but not all. There is 
 
 There are tasks which this role does apply if set, these are:
 
-  * Start MongoDB with numactl, set in systemd file
-  * Disabling zone reclaimm
-  * Disabling transparent hugepages
-  * Configure tuned profile
+* Start MongoDB with numactl, set in systemd file
+* Disabling zone reclaimm
+* Disabling transparent hugepages
+* Configure tuned profile
 
 See `tasks/thp.yml` and `tasks/numa.yml` for the actual changes to the system.
 
 These configuration recommendations are applied by default.
 
 ```yaml
-mongo_thp: true
-mongo_numa: true
+mongodb_thp: true
+mongodb_numa: true
 ```
 
 ## Configuration variables
@@ -73,7 +73,7 @@ The values set in the Ansible configuration are set **exactly** to the configura
 
 ```yaml
 # Variable set in Ansible configuration
-mongo_operationprofiling:
+mongodb_operationprofiling:
   my_Value:
     anotherValue: something
 ```
@@ -89,23 +89,24 @@ operationProfiling:
 If the key is set to an empty string, it will be commented out on the configuration file on disk.
 
 The possible keys to set are:
+
 ```yaml
-mongo_systemlog
-mongo_storage
-mongo_processmanagement
-mongo_security
-mongo_operationprofiling
-mongo_replication
-mongo_sharding
-mongo_auditlog
-mongo_snmp
+mongodb_systemlog
+mongodb_storage
+mongodb_processmanagement
+mongodb_security
+mongodb_operationprofiling
+mongodb_replication
+mongodb_sharding
+mongodb_auditlog
+mongodb_snmp
 ```
 
 There are pre-defined values, which are default for Mongo.
 If for some reason, it is desired to set custom key/values, use:
 
 ```yaml
-mongo_custom_cnf:
+mongodb_custom_cnf:
   my_key:
     my_value: true
 ```
@@ -116,9 +117,9 @@ By design there are 3 users created: `admin`, `backup` and `adminuser`.
 The admin has role root, the backup user has role backup and adminuser has role userAdminAnyDatabase.
 
 ```yaml
-mongo_admin_pass: 'change_me'
-mongo_adminuser_name: adminuser
-mongo_adminuser_pass: 'change_me'
+mongodb_admin_pass: 'change_me'
+mongodb_adminuser_name: adminuser
+mongodb_adminuser_pass: 'change_me'
 ```
 
 ## Databases and users
@@ -131,8 +132,9 @@ Users and databases are always configured via localhost, via user admin and data
 When a cluster configured, configuring database and users is executed from the primary host.
 
 Set with:
+
 ```yaml
-mongo_user:
+mongodb_user:
 # in it's most simple form
   - database: my_db
     name: my_user
@@ -166,7 +168,6 @@ mongo_user:
 
 To keep the role idempotent, you should set the value for `update_password` to `on_create`. Only when actually updating a password, set it to `always`, then switch back to `on_create`.
 
-
 ## Clustering
 
 When there are multiple hosts in the play, Ansible assumes clustering is configured.
@@ -178,7 +179,7 @@ For security reasons, the connection between the hosts is secured with a keyfile
 The [keyfile is automatically generated and deemed secure](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/).
 
 ```yaml
-mongo_security:
+mongodb_security:
   keyFile: /etc/keyfile_mongo
 ```
 
@@ -189,12 +190,13 @@ Mongo will not cluster, because there must be a valid number of replicaset membe
 There are assertions in place to verify an uneven amount of hosts in the play.
 
 Configure with:
+
 ```yaml
 # set the role per host. in the host_vars
-mongo_replication_role: primary # or secondary, or arbiter
+mongodb_replication_role: primary # or secondary, or arbiter
 
 # in group_vars/all.yml
-mongo_replication:
+mongodb_replication:
   replSetName: something
 ```
 
@@ -207,7 +209,7 @@ Ensure to [disable read concern majority](https://docs.mongodb.com/v4.0/referenc
 ```yaml
 # not for version 5.0 or higher
 # and only when the architecture is PSA (Primary, Secondary, Arbiter)
-mongo_replication:
+mongodb_replication:
   replSetName: something
   enableMajorityReadConcern: false
 ```
@@ -219,7 +221,7 @@ As per the [docs](https://docs.mongodb.com/manual/tutorial/add-replica-set-arbit
 Ansible will take care of adding the arbiter properly to the cluster.
 
 ```yaml
-mongo_replication_role: arbiter
+mongodb_replication_role: arbiter
 ```
 
 ## Backup
@@ -235,7 +237,7 @@ The backup scripts are **only** placed on the first applicable secondary node:
 ```
 
 ```yaml
-mongo_backup:
+mongodb_backup:
   enabled: true
   dbs:
     - admin
@@ -243,7 +245,7 @@ mongo_backup:
     - local
   user: backup
   pass: change_me
-  path: /var/lib/mongo_backups
+  path: /var/lib/mongodb_backups
   owner: mongod
   group: mongod
   mode: '0660'
@@ -256,14 +258,15 @@ mongo_backup:
 Ensure to change the password of the backup user, and allow the backup user to actually backup a given database.
 
 On disk, the result will be:
+
 ```bash
-[root@test-multi-03 mongo_backups]# pwd ; ls -larth
-/var/lib/mongo_backups
+[root@test-multi-03 mongodb_backups]# pwd ; ls -larth
+/var/lib/mongodb_backups
 total 4.0K
 drwxr-xr-x. 36 root   root   4.0K Jan 20 12:33 ..
-lrwxrwxrwx   1 root   root     46 Nov 20 12:37 latest -> /var/lib/mongo_backups/mongo_backup_2021-11-20
+lrwxrwxrwx   1 root   root     46 Nov 20 12:37 latest -> /var/lib/mongodb_backups/mongodb_backup_2021-11-20
 drw-rw----   3 mongod mongod   51 Nov 20 12:37 .
-drwxr-xr-x   5 root   root     77 Nov 20 12:38 mongo_backup_2021-11-20
+drwxr-xr-x   5 root   root     77 Nov 20 12:38 mongodb_backup_2021-11-20
 ```
 
 ## Logrotation
@@ -282,10 +285,10 @@ This role does not include major versioning upgrades due to breaking changes on 
 New variables can be set when updating mongo. To update:
 
 ```yaml
-mongo_state: latest
+mongodb_state: latest
 
 # setting new variables is possible when updating mongo
-mongo_net:
+mongodb_net:
   new_variable: true
 ```
 
@@ -328,7 +331,7 @@ In development.
 
 ## Development
 
- * There is a reset playbook to remove all mongo files. This is useful for development purposes, see `tasks/reset.yml`. It is commented out by design
+* There is a reset playbook to remove all mongo files. This is useful for development purposes, see `tasks/reset.yml`. It is commented out by design
 
 ### Scaling
 
@@ -336,10 +339,10 @@ Still in development... I am not even sure whenever I'll this functionality, sin
 It is not easy to configure scaling in mongo with Ansible, since the method is not straight forward.
 
 So far, I saw that the steps should be:
-- If arbiter is present in configuration and on system
-    - remove arbiter from cluster
-- Add new secondary or secondaries
-- Add arbiter if configured
+* If arbiter is present in configuration and on system
+  * remove arbiter from cluster
+* Add new secondary or secondaries
+* Add arbiter if configured
 
 I have tried configuring this countless amount of times, but always failed due to a system error. I decided to not include scaling for now.
 
@@ -347,36 +350,36 @@ I have tried configuring this countless amount of times, but always failed due t
 
 ```yaml
 - hosts:
-    - host_mongo_primary
-    - host_mongo_secondary
-    - host_mongo_arbiter
+    - host_mongodb_primary
+    - host_mongodb_secondary
+    - host_mongodb_arbiter
   roles:
     - mongodb
   any_error_true: true
   vars:
-    mongo_restart_config: true
-    mongo_restart_seconds: 8
-    mongo_thp: true
-    mongo_numa: true
-    mongo_replication:
+    mongodb_restart_config: true
+    mongodb_restart_seconds: 8
+    mongodb_thp: true
+    mongodb_numa: true
+    mongodb_replication:
       replSetName: replicaset1
-    mongo_security:
+    mongodb_security:
       authorization: enabled
       keyFile: /etc/keyfile_mongo
-    mongo_admin_pass: something
-    mongo_adminuser_pass: something
-    mongo_net:
+    mongodb_admin_pass: something
+    mongodb_adminuser_pass: something
+    mongodb_net:
       bindIp: 0.0.0.0
       port: 27017
-    mongo_systemlog:
+    mongodb_systemlog:
       destination: file
       logAppend: true
       path: /opt/somewhere/mongod.log
-    mongo_storage:
+    mongodb_storage:
       dbPath: /opt/mongo/
       journal:
         enabled: true
-    mongo_user:
+    mongodb_user:
       - database: burgers
         name: bob
         password: 12345
@@ -389,3 +392,34 @@ I have tried configuring this countless amount of times, but always failed due t
     #     src: hosts.j2
     #     dest: /etc/hosts
 ```
+
+## Testing
+
+This role is tested using Molecule against Red Hat Universal Base Image (UBI) 8 and 9.
+
+### Scenarios
+
+| Scenario | Distribution | Nodes | Architecture | Mode |
+| :--- | :--- | :--- | :--- | :--- |
+| **default** | UBI 9 | 1 | Standalone | No systemd |
+| **default-ubi8** | UBI 8 | 1 | Standalone | Systemd |
+| **replicaset-psa-ubi8** | UBI 8 | 3 | PSA | Systemd |
+| **replicaset-psa-ubi9** | UBI 9 | 3 | PSA | No systemd |
+| **replicaset-pss-ubi8** | UBI 8 | 5 | PSS | Systemd |
+| **replicaset-pss-ubi9** | UBI 9 | 5 | PSS | No systemd |
+
+To run tests:
+
+```bash
+# Test a specific scenario
+molecule test -s replicaset-psa-ubi8
+
+# Test all scenarios
+molecule test --all
+```
+
+### Note on Infrastructure Compatibility
+
+* **UBI 9**: Scenarios on UBI 9 are configured to bypass `systemd` initialization if host cgroupv2 restrictions prevent PID 1 from starting.
+* **UBI 8**: Containers are automatically bootstrapped with **Python 3.9** during the `prepare` stage to support modern `ansible-core` modules.
+* **Variable Prefixing**: All variables are prefixed with `mongodb_` to ensure namespace safety and comply with development standards.

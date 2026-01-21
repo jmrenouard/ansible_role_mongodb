@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /molecule/replicaset-pss-ubi9/converge.yml
+# Description: Managed by doc-sync workflow
+
 ---
 # required for fact gathering, ipv4 address
 - name: Converge

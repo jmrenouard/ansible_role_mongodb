@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /molecule/default-ubi8/verify.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: Verify
   hosts: all

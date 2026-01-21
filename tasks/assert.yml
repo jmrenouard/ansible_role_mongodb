@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /tasks/assert.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: assert | set fact for amount of hosts
   set_fact:
@@ -10,30 +14,30 @@
 - name: assert | that naming is set correctly for replication roles
   assert:
     that: |
-      mongo_replication_role == 'arbiter' or
-      mongo_replication_role == 'secondary' or
-      mongo_replication_role == 'primary'
+      mongodb_replication_role == 'arbiter' or
+      mongodb_replication_role == 'secondary' or
+      mongodb_replication_role == 'primary'
   when: host_count != '1'
 
 - name: assert | set fact for roles
   set_fact:
-    mongo_primary: "{{ mongo_replication_role == 'primary' }}"
-    mongo_secondary: "{{ mongo_replication_role == 'secondary' }}"
-    mongo_arbiter: "{{ mongo_replication_role == 'arbiter' }}"
+    mongodb_primary: "{{ mongodb_replication_role == 'primary' }}"
+    mongodb_secondary: "{{ mongodb_replication_role == 'secondary' }}"
+    mongodb_arbiter: "{{ mongodb_replication_role == 'arbiter' }}"
 
 - name: assert | several items for a single host
   assert:
     that:
-      - mongo_replication_role == ''
-      - mongo_security.keyFile is not defined
+      - mongodb_replication_role == ''
+      - mongodb_security.keyFile is not defined
   when: host_count == '1'
 
 - name: assert | that passwords are changed
   assert:
     that:
-      - mongo_admin_pass != 'change_me'
-      - mongo_adminuser_pass != 'change_me'
-      - mongo_backup.pass != 'change_me'
+      - mongodb_admin_pass != 'change_me'
+      - mongodb_adminuser_pass != 'change_me'
+      - mongodb_backup.pass != 'change_me'
   
 - block:
 
@@ -43,7 +47,7 @@
       vars:
         keys: "{{ ansible_play_hosts }}"
         values: "{{ ansible_play_hosts|
-                    map('extract', hostvars, ['mongo_primary']) |
+                    map('extract', hostvars, ['mongodb_primary']) |
                     list }}"
 
     - name: assert | create list of bootstrappers
@@ -63,7 +67,7 @@
       vars:
         keys: "{{ ansible_play_hosts }}"
         values: "{{ ansible_play_hosts|
-                    map('extract', hostvars, ['mongo_arbiter']) |
+                    map('extract', hostvars, ['mongodb_arbiter']) |
                     list }}"
 
     - name: assert | create list of arbiters
@@ -80,11 +84,11 @@
     - name: assert | several asserts for when cluster is enabled
       assert:
         that:
-          - mongo_replication_role != ''
-          - mongo_replication.replSetName | length > 0
-          - mongo_security.keyFile | length > 0
-          - mongo_primary is defined
-          - mongo_secondary is defined
+          - mongodb_replication_role != ''
+          - mongodb_replication.replSetName | length > 0
+          - mongodb_security.keyFile | length > 0
+          - mongodb_primary is defined
+          - mongodb_secondary is defined
 
   run_once: true
   when: host_count != '1'

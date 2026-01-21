@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /tasks/config.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: conf | set
   template:
@@ -6,7 +10,7 @@
     owner: root
     group: root
     mode: '0644'
-  register: mongo_conf_set
+  register: mongodb_conf_set
 
 - name: conf | ensure mongod is started and enabled
   service:
@@ -15,24 +19,24 @@
     enabled: true
 
 - name: conf | restart mongod service one by one, after a config change, if set
-  shell: "systemctl restart mongod && sleep {{ mongo_restart_seconds }}"
+  shell: "systemctl restart mongod && sleep {{ mongodb_restart_seconds }}"
   run_once: true
   delegate_to: "{{ item }}"
   loop: "{{ ansible_play_hosts }}"
   when:
-    - mongo_restart_config
-    - mongo_conf_set.changed
+    - mongodb_restart_config
+    - mongodb_conf_set.changed
 
 - name: conf | check cluster health after config change if applicable
   community.mongodb.mongodb_status:
     login_host: localhost
-    login_port: "{{ mongo_net.port }}"
+    login_port: "{{ mongodb_net.port }}"
     login_user: admin
-    login_password: "{{ mongo_admin_pass }}"
+    login_password: "{{ mongodb_admin_pass }}"
     validate: minimal
     poll: 5
     interval: 12
-    replica_set: "{{ mongo_replication.replSetName }}"
+    replica_set: "{{ mongodb_replication.replSetName }}"
 
     ssl: "{{ item.ssl | default(omit) }}"
     ssl_ca_certs: "{{ item.ca_certs | default(omit) }}"
@@ -48,6 +52,6 @@
       {{ item.create_for_localhost_exception | default(omit) }}
   when:
     - host_count != '1'
-    - mongo_restart_config
-    - mongo_conf_set.changed
-    - mongo_primary
+    - mongodb_restart_config
+    - mongodb_conf_set.changed
+    - mongodb_primary

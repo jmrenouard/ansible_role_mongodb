@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /molecule/replicaset-psa-ubi9/molecule.yml
+# Description: Managed by doc-sync workflow
+
 ---
 lint: |
   set -e

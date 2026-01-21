@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /tasks/scale.yml
+# Description: Managed by doc-sync workflow
+
 ---
 # Still in development...
 # It is not easy to configure scaling in mongo with Ansible
@@ -25,7 +29,7 @@
 #   set_fact:
 #     run_on: "{{ item }}"
 #   with_items: "{{ play_hosts }}"
-#   when: run_on is undefined and hostvars[item].mongo_primary
+#   when: run_on is undefined and hostvars[item].mongodb_primary
 #   run_once: true
 #
 # - block:
@@ -36,7 +40,7 @@
 #       vars:
 #         keys: "{{ ansible_play_hosts }}"
 #         values: "{{ ansible_play_hosts|
-#                     map('extract', hostvars, ['mongo_arbiter']) |
+#                     map('extract', hostvars, ['mongodb_arbiter']) |
 #                     list }}"
 #
 #     - name: assert | create dictionary of arbiter system check
@@ -93,15 +97,15 @@
 #             current_members | default([]) +
 #             [{
 #               'host': item + ':' +
-#                mongo_port[hostvars[item].mongo_replication_role],
-#               'priority': member_weight[hostvars[item].mongo_replication_role]
+#                mongodb_port[hostvars[item].mongodb_replication_role],
+#               'priority': member_weight[hostvars[item].mongodb_replication_role]
 #             }]
 #           }}
 #       loop: "{{ current_cluster_hosts }}"
 #       vars:
-#         mongo_port:
-#           primary: "{{ mongo_net.port }}"
-#           secondary: "{{ mongo_net.port }}"
+#         mongodb_port:
+#           primary: "{{ mongodb_net.port }}"
+#           secondary: "{{ mongodb_net.port }}"
 #         member_weight:
 #           primary: 3
 #           secondary: 2
@@ -110,28 +114,28 @@
 #     - name: scale | reconfigure cluster with current hosts
 #       community.mongodb.mongodb_replicaset:
 #         login_host: localhost
-#         login_port: "{{ mongo_net.port }}"
+#         login_port: "{{ mongodb_net.port }}"
 #         login_user: admin
-#         login_password: "{{ mongo_admin_pass }}"
+#         login_password: "{{ mongodb_admin_pass }}"
 #
-#         replica_set: "{{ mongo_replication.replSetName }}"
+#         replica_set: "{{ mongodb_replication.replSetName }}"
 #         reconfigure: true
 #         force: true
 #         members: "{{ current_members }}"
-#       when: mongo_primary
+#       when: mongodb_primary
 #
 #     - name: scale | wait until cluster health is ok
 #       community.mongodb.mongodb_status:
 #         login_host: localhost
-#         login_port: "{{ mongo_net.port }}"
+#         login_port: "{{ mongodb_net.port }}"
 #         login_user: admin
-#         login_password: "{{ mongo_admin_pass }}"
+#         login_password: "{{ mongodb_admin_pass }}"
 #
 #         validate: minimal
 #         poll: 5
 #         interval: 12
-#         replica_set: "{{ mongo_replication.replSetName }}"
-#       when: mongo_primary
+#         replica_set: "{{ mongodb_replication.replSetName }}"
+#       when: mongodb_primary
 #
 #   when:
 #     - arbiter_present
@@ -152,16 +156,16 @@
 #         new_members | default([]) +
 #         [{
 #           'host': item + ':' +
-#            mongo_port[hostvars[item].mongo_replication_role],
-#           'priority': member_weight[hostvars[item].mongo_replication_role]
+#            mongodb_port[hostvars[item].mongodb_replication_role],
+#           'priority': member_weight[hostvars[item].mongodb_replication_role]
 #         }]
 #       }}
 #   loop: "{{ host_without_arb }}"
 #   when: inventory_hostname == run_on
 #   vars:
-#     mongo_port:
-#       primary: "{{ mongo_net.port }}"
-#       secondary: "{{ mongo_net.port }}"
+#     mongodb_port:
+#       primary: "{{ mongodb_net.port }}"
+#       secondary: "{{ mongodb_net.port }}"
 #     member_weight:
 #       primary: 3
 #       secondary: 2
@@ -169,28 +173,28 @@
 # - name: scale | reconfigure cluster to include the new secondary
 #   community.mongodb.mongodb_replicaset:
 #     login_host: localhost
-#     login_port: "{{ mongo_net.port }}"
+#     login_port: "{{ mongodb_net.port }}"
 #     login_user: admin
-#     login_password: "{{ mongo_admin_pass }}"
+#     login_password: "{{ mongodb_admin_pass }}"
 #
-#     replica_set: "{{ mongo_replication.replSetName }}"
+#     replica_set: "{{ mongodb_replication.replSetName }}"
 #     reconfigure: true
 #     members: "{{ new_members }}"
 #     force: true
-#   when: mongo_primary
+#   when: mongodb_primary
 #
 # - name: scale | wait until cluster health is ok
 #   community.mongodb.mongodb_status:
 #     login_host: localhost
-#     login_port: "{{ mongo_net.port }}"
+#     login_port: "{{ mongodb_net.port }}"
 #     login_user: admin
-#     login_password: "{{ mongo_admin_pass }}"
+#     login_password: "{{ mongodb_admin_pass }}"
 #
 #     validate: default
 #     poll: 5
 #     interval: 12
-#     replica_set: "{{ mongo_replication.replSetName }}"
-#   when: mongo_primary
+#     replica_set: "{{ mongodb_replication.replSetName }}"
+#   when: mongodb_primary
 #
 # - name: scale | block to inclue the arbiter if set
 #   block:
@@ -201,8 +205,8 @@
 #           {{
 #             members | default([]) +
 #             [{
-#               'host': item + ':{{ mongo_net.port }}',
-#               'priority': member_weight[hostvars[item].mongo_replication_role]
+#               'host': item + ':{{ mongodb_net.port }}',
+#               'priority': member_weight[hostvars[item].mongodb_replication_role]
 #             }]
 #           }}
 #       loop: "{{ ansible_play_hosts }}"
@@ -216,7 +220,7 @@
 #     - name: cluster | set fact for arbiter index number
 #       set_fact:
 #         arbiter_index: "{{ hostid }}"
-#       when: hostvars[item].mongo_arbiter
+#       when: hostvars[item].mongodb_arbiter
 #       loop: "{{ ansible_play_hosts }}"
 #       loop_control:
 #         index_var: hostid
@@ -224,21 +228,21 @@
 #     - name: scale | reconfigure cluster to include the arbiter
 #       community.mongodb.mongodb_replicaset:
 #         login_host: localhost
-#         login_port: "{{ mongo_net.port }}"
+#         login_port: "{{ mongodb_net.port }}"
 #         login_user: admin
-#         login_password: "{{ mongo_admin_pass }}"
+#         login_password: "{{ mongodb_admin_pass }}"
 #
-#         replica_set: "{{ mongo_replication.replSetName }}"
+#         replica_set: "{{ mongodb_replication.replSetName }}"
 #         reconfigure: true
 #         members: "{{ members }}"
-#       when: mongo_primary
+#       when: mongodb_primary
 #
 #     - name: scale | wait until cluster health is ok
 #       community.mongodb.mongodb_status:
 #         validate: default
 #         poll: 5
 #         interval: 12
-#         replica_set: "{{ mongo_replication.replSetName }}"
-#       when: mongo_primary
+#         replica_set: "{{ mongodb_replication.replSetName }}"
+#       when: mongodb_primary
 #
 #   when: arbiter_present

@@ -1,24 +1,28 @@
+# Ansible Role: mongodb
+# File: /tasks/install.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: install | repo gpg key
   rpm_key:
-    key: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
-  when: mongo_repo
+    key: https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc
+  when: mongodb_repo
 
 - name: install | repo
   yum_repository:
-    name: "mongodb-org-{{ mongo_version }}"
-    description: 'MongoDB {{ mongo_edition }} repo'
+    name: "mongodb-org-{{ mongodb_version }}"
+    description: 'MongoDB {{ mongodb_edition }} repo'
     file: mongodb
     baseurl: >-
       https://repo.mongodb.
-      {{- (mongo_edition == 'enterprise') | ternary('com', 'org') -}}
+      {{- (mongodb_edition == 'enterprise') | ternary('com', 'org') -}}
       /yum/redhat/$releasever/mongodb-
-      {{- mongo_edition }}/
-      {{- mongo_version }}/x86_64/
+      {{- mongodb_edition }}/
+      {{- mongodb_version }}/x86_64/
     enabled: true
     gpgcheck: true
-    gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
-  when: mongo_repo
+    gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc
+  when: mongodb_repo
 
 - name: install | group mongod
   group:
@@ -33,7 +37,7 @@
     system: true
     group: mongod
     comment: 'MongoDB Server'
-    home: "{{ mongo_storage.dbPath }}"
+    home: "{{ mongodb_storage.dbPath }}"
     create_home: false
     shell: /sbin/nologin
   register: set_user
@@ -44,14 +48,14 @@
       - python3-devel
       - python3-pip
 
-- name: install | mongo edition {{ mongo_edition }}
+- name: install | mongo edition {{ mongodb_edition }}
   dnf:
-    name: mongodb-{{ mongo_edition }}
+    name: mongodb-{{ mongodb_edition }}
 
 - name: install | data folder
   file:
     state: directory
-    path: "{{ mongo_storage.dbPath }}"
+    path: "{{ mongodb_storage.dbPath }}"
     mode: '0770'
     owner: mongod
     group: mongod
@@ -60,20 +64,20 @@
   file:
     state: absent
     path: /var/lib/mongo
-  when: mongo_storage.dbPath != '/var/lib/mongo'
+  when: mongodb_storage.dbPath != '/var/lib/mongo'
 
 - name: install | remove log folder when set differently
   file:
     state: absent
     path: /var/log/mongodb
   when: >-
-    '/var/log/mongodb' not in mongo_systemlog.path or
-    mongo_systemlog.destination != 'file'
+    '/var/log/mongodb' not in mongodb_systemlog.path or
+    mongodb_systemlog.destination != 'file'
 
 - block:
     - name: install | ensure log folder exists
       file:
-        path: "{{ mongo_systemlog.path | dirname }}"
+        path: "{{ mongodb_systemlog.path | dirname }}"
         state: directory
         owner: mongod
         group: mongod
@@ -81,28 +85,28 @@
 
     - name: install | stat if log file exist
       stat:
-        path: "{{ mongo_systemlog.path }}"
-      register: mongo_log_check
+        path: "{{ mongodb_systemlog.path }}"
+      register: mongodb_log_check
 
     - name: install | ensure log files exist
       copy:
         content: ""
-        dest: "{{ mongo_systemlog.path }}"
+        dest: "{{ mongodb_systemlog.path }}"
         force: true
         group: mongod
         owner: mongod
         mode: '0755'
-      when: not mongo_log_check.stat.exists
+      when: not mongodb_log_check.stat.exists
 
   when: >-
-    '/var/log/mongodb' not in mongo_systemlog.path and
-    mongo_systemlog.destination == 'file'
+    '/var/log/mongodb' not in mongodb_systemlog.path and
+    mongodb_systemlog.destination == 'file'
 
-- name: install | pymongo {{ mongo_pymongo_version }}
+- name: install | pymongo {{ mongodb_pymongo_version }}
   pip:
     name: pymongo
     executable: pip3
-    version: "{{ mongo_pymongo_version }}"
+    version: "{{ mongodb_pymongo_version }}"
 
 # Check firewalld status
 - name: Populate service facts
@@ -110,7 +114,7 @@
 
 - name: Open ports on firewall
   ansible.posix.firewalld:
-    port: "{{ mongo_net.port }}/tcp"
+    port: "{{ mongodb_net.port }}/tcp"
     permanent: true
     immediate: true
     state: enabled

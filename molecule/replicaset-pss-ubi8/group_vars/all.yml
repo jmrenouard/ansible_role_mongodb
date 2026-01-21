@@ -1,36 +1,40 @@
+# Ansible Role: mongodb
+# File: /molecule/replicaset-pss-ubi8/group_vars/all.yml
+# Description: Managed by doc-sync workflow
+
 ---
-mongo_restart_config: true
-mongo_restart_seconds: 5
-mongo_version: 7.0
+mongodb_restart_config: true
+mongodb_restart_seconds: 5
+mongodb_version: 7.0
 
-mongo_thp: false
-mongo_numa: false
+mongodb_thp: false
+mongodb_numa: false
 
-mongo_replication:
+mongodb_replication:
   replSetName: something
 
-mongo_security:
+mongodb_security:
   authorization: enabled
   keyFile: /etc/keyfile_mongo
 
-mongo_admin_pass: something
-mongo_adminuser_pass: something
+mongodb_admin_pass: something
+mongodb_adminuser_pass: something
 
-mongo_net:
+mongodb_net:
   bindIp: 0.0.0.0
   port: 27018
 
-mongo_systemlog:
+mongodb_systemlog:
   destination: file
   logAppend: true
   path: /opt/somewhere/mongod.log
 
-mongo_storage:
+mongodb_storage:
   dbPath: /opt/mongo/
   journal:
     enabled: true
 
-mongo_user:
+mongodb_user:
   - database: burgers
     name: bob
     password: 12345

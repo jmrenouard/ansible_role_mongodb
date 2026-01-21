@@ -1,14 +1,18 @@
+# Ansible Role: mongodb
+# File: /tasks/keyfile.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: keyfile | set fact to copy keyfile from a host
   set_fact:
     keyfile_host: "{{ item }}"
-  when: hostvars[item].mongo_primary
+  when: hostvars[item].mongodb_primary
   run_once: true
   loop: "{{ ansible_play_hosts }}"
 
 - name: keyfile | stat
   stat:
-    path: "{{ mongo_security.keyFile }}"
+    path: "{{ mongodb_security.keyFile }}"
   register: keyfile_check
 
 - name: keyfile | set fact
@@ -49,23 +53,23 @@
 
     - name: keyfile | create when none has a keyfile
       shell: >-
-        openssl rand -base64 741 > {{ mongo_security.keyFile }} ;
-        chmod 400 {{ mongo_security.keyFile }} ;
-        chown mongod: {{ mongo_security.keyFile }}
+        openssl rand -base64 741 > {{ mongodb_security.keyFile }} ;
+        chmod 400 {{ mongodb_security.keyFile }} ;
+        chown mongod: {{ mongodb_security.keyFile }}
       register: new_keyfile
-      when: mongo_primary
+      when: mongodb_primary
 
     - name: keyfile | fetch keyfile
       fetch:
-        src: "{{ mongo_security.keyFile }}"
+        src: "{{ mongodb_security.keyFile }}"
         flat: true
-        dest: /tmp/mongo_keyfile
+        dest: /tmp/mongodb_keyfile
       delegate_to: "{{ keyfile_host }}"
 
     - name: keyfile | copy required files to remaining hosts
       copy:
-        src: /tmp/mongo_keyfile
-        dest: "{{ mongo_security.keyFile }}"
+        src: /tmp/mongodb_keyfile
+        dest: "{{ mongodb_security.keyFile }}"
         mode: '0400'
         owner: mongod
         group: mongod
@@ -77,15 +81,15 @@
 
     - name: keyfile | fetch keyfile
       fetch:
-        src: "{{ mongo_security.keyFile }}"
+        src: "{{ mongodb_security.keyFile }}"
         flat: true
-        dest: /tmp/mongo_keyfile
+        dest: /tmp/mongodb_keyfile
       delegate_to: "{{ keyfile_host }}"
 
     - name: keyfile | copy required files to remaining hosts
       copy:
-        src: /tmp/mongo_keyfile
-        dest: "{{ mongo_security.keyFile }}"
+        src: /tmp/mongodb_keyfile
+        dest: "{{ mongodb_security.keyFile }}"
         mode: '0400'
         owner: mongod
         group: mongod
@@ -94,7 +98,7 @@
 
 - name: keyfile | ensure absence from localhost
   file:
-    path: /tmp/mongo_keyfile
+    path: /tmp/mongodb_keyfile
     state: absent
   run_once: true
   delegate_to: localhost

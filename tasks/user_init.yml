@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /tasks/user_init.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: user_init | set temporary conf
   template:
@@ -19,15 +23,15 @@
     password: "{{ item.pass }}"
     roles: "{{ item.role }}"
     login_host: 127.0.0.1
-    login_port: "{{ mongo_net.port }}"
+    login_port: "{{ mongodb_net.port }}"
   # no_log: true
   loop:
     - name: admin
-      pass: "{{ mongo_admin_pass }}"
+      pass: "{{ mongodb_admin_pass }}"
       role: root
-    - name: "{{ mongo_adminuser_name }}"
-      pass: "{{ mongo_adminuser_pass }}"
+    - name: "{{ mongodb_adminuser_name }}"
+      pass: "{{ mongodb_adminuser_pass }}"
       role: userAdminAnyDatabase
-    - name: "{{ mongo_backup.user }}"
-      pass: "{{ mongo_backup.pass }}"
+    - name: "{{ mongodb_backup.user }}"
+      pass: "{{ mongodb_backup.pass }}"
       role: backup

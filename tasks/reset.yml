@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /tasks/reset.yml
+# Description: Managed by doc-sync workflow
+
 ---
 # This playbook is for development purposes.
 # It simply removes all mongo related files quick 'n dirty
@@ -5,7 +9,7 @@
 
 - name: reset | repo gpg key
   rpm_key:
-    key: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
+    key: https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc
     state: absent
 
 - name: reset | remove mongo from system
@@ -16,13 +20,13 @@
     - "rm -rf /etc/mongo*"
     - "rm -rf /var/lib/mongo*"
     - "rm -rf /var/log/mongo*"
-    - "rm -rf {{ mongo_systemlog.path }}"
-    - "rm -rf {{ mongo_storage.dbPath }}"
-    - "rm {{ mongo_security.keyFile | default(omit) }} | echo"
+    - "rm -rf {{ mongodb_systemlog.path }}"
+    - "rm -rf {{ mongodb_storage.dbPath }}"
+    - "rm {{ mongodb_security.keyFile | default(omit) }} | echo"
     - "rm -f /etc/systemd/system/disable-transparent-hugepage*"
     - userdel mongod | echo
     - rm -rf /etc/tuned/virtual-guest-no-thp/tuned.conf
-    - "rm -rf {{ mongo_backup.path }}"
+    - "rm -rf {{ mongodb_backup.path }}"
     - userdel mongod | echo  # weird bug, but sometimes the user isn't removed
     - "rm -f /usr/lib/systemd/system/mongod.service"
   when: true

@@ -1,11 +1,15 @@
+# Ansible Role: mongodb
+# File: /tasks/user.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: user | set defined users and databases
   community.mongodb.mongodb_user:
     login_host: localhost
-    login_port: "{{ mongo_net.port }}"
+    login_port: "{{ mongodb_net.port }}"
     login_database: admin
     login_user: admin
-    login_password: "{{ mongo_admin_pass }}"
+    login_password: "{{ mongodb_admin_pass }}"
 
     database: "{{ item.database }}"
     name: "{{ item.name }}"
@@ -14,7 +18,7 @@
     update_password: "{{ item.update_password | default('always') }}"
     state: "{{ item.state | default(present) }}"
 
-    replica_set: "{{ mongo_replication.replSet | default(omit) }}"
+    replica_set: "{{ mongodb_replication.replSet | default(omit) }}"
 
     ssl: "{{ item.ssl | default(omit) }}"
     ssl_ca_certs: "{{ item.ca_certs | default(omit) }}"
@@ -28,4 +32,4 @@
     connection_options: "{{ item.connection_options | default(omit) }}"
     create_for_localhost_exception: >-
       {{ item.create_for_localhost_exception | default(omit) }}
-  loop: "{{ mongo_user }}"
+  loop: "{{ mongodb_user }}"

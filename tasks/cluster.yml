@@ -1,7 +1,11 @@
+# Ansible Role: mongodb
+# File: /tasks/cluster.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: cluster | check if hosts are in clustered
   shell: >-
-    mongosh --port {{ mongo_net.port }} --quiet --eval 'db.isMaster().hosts'
+    mongosh --port {{ mongodb_net.port }} --quiet --eval 'db.isMaster().hosts'
   register: check_cluster
   changed_when: false
 
@@ -58,8 +62,8 @@
       {{
         members | default([]) +
         [{
-          'host': hostvars[item].ansible_fqdn + ':{{ mongo_net.port }}',
-          'priority': member_weight[hostvars[item].mongo_replication_role]
+          'host': hostvars[item].ansible_fqdn + ':{{ mongodb_net.port }}',
+          'priority': member_weight[hostvars[item].mongodb_replication_role]
         }]
       }}
   loop: "{{ ansible_play_hosts }}"
@@ -73,7 +77,7 @@
 - name: cluster | set fact for arbiter index number
   set_fact:
     arbiter_index: "{{ hostid }}"
-  when: hostvars[item].mongo_arbiter
+  when: hostvars[item].mongodb_arbiter
   loop: "{{ ansible_play_hosts }}"
   loop_control:
     index_var: hostid
@@ -101,22 +105,22 @@
     - name: cluster | initial build
       community.mongodb.mongodb_replicaset:
         login_host: localhost
-        login_port: "{{ mongo_net.port }}"
+        login_port: "{{ mongodb_net.port }}"
         login_user: admin
-        login_password: "{{ mongo_admin_pass }}"
-        replica_set: "{{ mongo_replication.replSetName }}"
+        login_password: "{{ mongodb_admin_pass }}"
+        replica_set: "{{ mongodb_replication.replSetName }}"
         members: "{{ members }}"
         arbiter_at_index: "{{ arbiter_index | default(omit) }}"
-      when: mongo_primary
+      when: mongodb_primary
 
     - name: cluster | wait until cluster health is ok
       community.mongodb.mongodb_status:
-        login_port: "{{ mongo_net.port }}"
+        login_port: "{{ mongodb_net.port }}"
         validate: default
         poll: 5
         interval: 12
-        replica_set: "{{ mongo_replication.replSetName }}"
-      when: mongo_primary
+        replica_set: "{{ mongodb_replication.replSetName }}"
+      when: mongodb_primary
 
     - name: cluster | place original config
       template:
@@ -127,7 +131,7 @@
         mode: '0644'
 
     - name: cluster | restart mongod service one by one
-      shell: "systemctl restart mongod && sleep {{ mongo_restart_seconds }}"
+      shell: "systemctl restart mongod && sleep {{ mongodb_restart_seconds }}"
       run_once: true
       delegate_to: "{{ item }}"
       loop: "{{ ansible_play_hosts }}"
@@ -135,14 +139,14 @@
     - name: cluster | wait until cluster health is ok
       community.mongodb.mongodb_status:
         login_host: localhost
-        login_port: "{{ mongo_net.port }}"
+        login_port: "{{ mongodb_net.port }}"
         login_user: admin
-        login_password: "{{ mongo_admin_pass }}"
+        login_password: "{{ mongodb_admin_pass }}"
         validate: minimal
         poll: 5
         interval: 12
-        replica_set: "{{ mongo_replication.replSetName }}"
-      when: mongo_primary
+        replica_set: "{{ mongodb_replication.replSetName }}"
+      when: mongodb_primary
 
   when: no_host_is_clustered is defined
 

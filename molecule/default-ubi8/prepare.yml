@@ -1,3 +1,7 @@
+# Ansible Role: mongodb
+# File: /molecule/default-ubi8/prepare.yml
+# Description: Managed by doc-sync workflow
+
 ---
 - name: Prepare
   hosts: all

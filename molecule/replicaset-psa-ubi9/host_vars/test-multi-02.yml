@@ -1,2 +1,6 @@
+# Ansible Role: mongodb
+# File: /molecule/replicaset-psa-ubi9/host_vars/test-multi-02.yml
+# Description: Managed by doc-sync workflow
+
 ---
-mongo_replication_role: secondary
+mongodb_replication_role: secondary

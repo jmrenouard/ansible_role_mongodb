@@ -1,0 +1,19 @@
+# Python
+venv/
+.venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Ansible
+*.retry
+*.log
+.molecule/
+
+# OS
+.DS_Store
+Thumbs.db
+.ansible
