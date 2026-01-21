@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts:
+    - replica-ubi8-01
+    - replica-ubi8-02
+    - replica-ubi8-03
+    - replica-ubi8-04
+    - replica-ubi8-05
+  roles:
+    - role: ../..

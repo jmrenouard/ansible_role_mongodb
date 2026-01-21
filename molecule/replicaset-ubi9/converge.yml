@@ -1,0 +1,37 @@
+---
+# required for fact gathering, ipv4 address
+- name: Converge
+  hosts:
+    - replica-ubi9-01
+    - replica-ubi9-02
+    - replica-ubi9-03
+    - replica-ubi9-04
+    - replica-ubi9-05
+  tasks:
+    - name: install iproute
+      dnf:
+        name: iproute
+
+    - name: Set mongodb_use_template_for_hosts
+      set_fact:
+        mongodb_use_template_for_hosts: "{{ mongodb_use_template_for_hosts | default(true) }}"
+
+    - name: set /etc/hosts file
+      template:
+        src: hosts.j2
+        dest: /etc/hosts
+        mode: "0644"
+        owner: root
+        group: root
+      when: mongodb_use_template_for_hosts | bool
+
+- name: Converge
+  hosts:
+    - replica-ubi9-01
+    - replica-ubi9-02
+    - replica-ubi9-03
+    - replica-ubi9-04
+    - replica-ubi9-05
+  any_errors_fatal: true
+  roles:
+    - role: ../..

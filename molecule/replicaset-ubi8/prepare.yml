@@ -1,0 +1,8 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Ensure python39 is installed
+      raw: dnf install -y python39 python3-dnf
+      changed_when: true
