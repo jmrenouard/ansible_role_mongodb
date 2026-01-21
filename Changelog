@@ -9,6 +9,7 @@
  - feat: add agent rules for Ansible best practices.
  - feat: synchronize Changelog with meta/main.yml.
  - feat: add GitHub Actions for Molecule testing using gofrolist/ansible-molecule-action (CI and manual dispatch).
-  - feat: add 5-node MongoDB Replica Set scenarios for UBI 8 and UBI 9.
+  - chore: rename cluster scenarios to replicaset-psa and 5-node scenarios to replicaset-pss.
+ - feat: add 5-node MongoDB Replica Set scenarios for UBI 8 and UBI 9.
  - fix: resolve systemd/cgroupv2 crashes on EL 9 scenarios by switching to UBI 9 without systemd.
  - fix: upgrade python to 3.9 in UBI 8 scenarios to support modern ansible-core.

@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts:
+    - test-ubi8-01
+    - test-ubi8-02
+    - test-ubi8-03
+  roles:
+    - role: ../..

@@ -4,7 +4,7 @@ lint: |
   yamllint .
   ansible-lint
 scenario:
-  name: replicaset-ubi9
+  name: replicaset-psa-ubi9
 dependency:
   name: galaxy
 driver:
@@ -18,8 +18,8 @@ provisioner:
 verifier:
   name: ansible
 platforms:
-  - name: replica-ubi9-01
-    hostname: replica-ubi9-01
+  - name: test-multi-01
+    hostname: test-multi-01
     image: registry.access.redhat.com/ubi9/ubi:latest
     privileged: true
     pull: true
@@ -35,8 +35,8 @@ platforms:
     pre_build_image: true
     networks:
       - name: test_network
-  - name: replica-ubi9-02
-    hostname: replica-ubi9-02
+  - name: test-multi-02
+    hostname: test-multi-02
     image: registry.access.redhat.com/ubi9/ubi:latest
     privileged: true
     pull: true
@@ -52,42 +52,8 @@ platforms:
     pre_build_image: true
     networks:
       - name: test_network
-  - name: replica-ubi9-03
-    hostname: replica-ubi9-03
-    image: registry.access.redhat.com/ubi9/ubi:latest
-    privileged: true
-    pull: true
-    command: "tail -f /dev/null"
-    volumes:
-      - "/var/lib/containerd"
-    tmpfs:
-      - /run
-      - /tmp
-    tty: true
-    environment:
-      container: docker
-    pre_build_image: true
-    networks:
-      - name: test_network
-  - name: replica-ubi9-04
-    hostname: replica-ubi9-04
-    image: registry.access.redhat.com/ubi9/ubi:latest
-    privileged: true
-    pull: true
-    command: "tail -f /dev/null"
-    volumes:
-      - "/var/lib/containerd"
-    tmpfs:
-      - /run
-      - /tmp
-    tty: true
-    environment:
-      container: docker
-    pre_build_image: true
-    networks:
-      - name: test_network
-  - name: replica-ubi9-05
-    hostname: replica-ubi9-05
+  - name: test-multi-03
+    hostname: test-multi-03
     image: registry.access.redhat.com/ubi9/ubi:latest
     privileged: true
     pull: true

@@ -4,7 +4,7 @@ lint: |
   yamllint .
   ansible-lint
 scenario:
-  name: replicaset-ubi8
+  name: replicaset-pss-ubi8
 dependency:
   name: galaxy
 driver:
