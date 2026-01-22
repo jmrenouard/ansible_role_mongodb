@@ -4,11 +4,16 @@
 
 ---
 # Ansible Tasks for MongoDB Clustered setup
-- name: cluster | ensure mongod is started
+- name: cluster | ensure mongod is started (systemd)
   ansible.builtin.service:
     name: mongod
     state: started
+  when: mongodb_is_systemd
   ignore_errors: true
+
+- name: cluster | Supervisor fallback
+  ansible.builtin.include_tasks: supervisor.yml
+  when: not mongodb_is_systemd
 
 - name: cluster | wait for mongod port
   ansible.builtin.wait_for:
@@ -76,10 +81,11 @@
       {{
         members | default([]) +
         [{
-          'host': hostvars[item].ansible_fqdn + ':{{ mongodb_net.port }}',
-          'priority': member_weight[hostvars[item].mongodb_replication_role]
+          'host': hostvars[item].ansible_fqdn + ':' + (hostvars[item].mongodb_net.port | default(mongodb_net.port) | string),
+          'priority': hostvars[item].mongodb_priority | default(member_weight[hostvars[item].mongodb_replication_role])
         }]
       }}
+
   loop: "{{ ansible_play_hosts }}"
   run_once: true
   vars:
@@ -110,10 +116,18 @@
         group: root
         mode: "0644"
 
-    - name: cluster | stop mongod before init
+    - name: cluster | stop mongod before init (systemd)
       ansible.builtin.service:
         name: mongod
         state: stopped
+      when: mongodb_is_systemd
+      ignore_errors: true
+
+    - name: cluster | stop mongod before init (supervisor)
+      ansible.builtin.shell: |
+        supervisorctl -c /etc/supervisord.conf stop mongod || true
+        pkill mongod || true
+      when: not mongodb_is_systemd
       ignore_errors: true
 
     - name: cluster | start mongod with init config
@@ -149,13 +163,22 @@
         group: root
         mode: "0644"
 
-    - name: cluster | restart mongod service one by one
+    - name: cluster | restart mongod service one by one (systemd)
       ansible.builtin.service:
         name: mongod
         state: restarted
       run_once: true
       delegate_to: "{{ item }}"
       loop: "{{ ansible_play_hosts }}"
+      when: mongodb_is_systemd
+      ignore_errors: true
+
+    - name: cluster | restart mongod service one by one (supervisor)
+      ansible.builtin.command: supervisorctl restart mongod
+      run_once: true
+      delegate_to: "{{ item }}"
+      loop: "{{ ansible_play_hosts }}"
+      when: not mongodb_is_systemd
       ignore_errors: true
 
     - name: cluster | wait until cluster health is ok

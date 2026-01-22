@@ -3,10 +3,17 @@
 # Description: Supervisor fallback for MongoDB when systemd is missing
 
 ---
+- name: Supervisor | Check if installed
+  ansible.builtin.command: which supervisord
+  register: supervisor_installed
+  changed_when: false
+  ignore_errors: true
+
 - name: Supervisor | Install
   ansible.builtin.package:
     name: supervisor
     state: present
+  when: supervisor_installed.rc != 0
 
 - name: Supervisor | Ensure directory exists
   ansible.builtin.file:
@@ -35,7 +42,7 @@
 
 - name: Supervisor | Update and start mongod
   ansible.builtin.shell: |
-    supervisorctl update
-    supervisorctl start mongod
+    supervisorctl -c /etc/supervisord.conf update
+    supervisorctl -c /etc/supervisord.conf start mongod
   changed_when: false
-  when: mongodb_supervisor_conf.changed or mongodb_conf_set.changed
+  when: (mongodb_supervisor_conf is defined and mongodb_supervisor_conf.changed) or (mongodb_conf_set is defined and mongodb_conf_set.changed)

@@ -6,16 +6,33 @@ all:
           ansible_host: localhost
           ansible_port: 2221
           mongodb_replication_role: primary
+          mongodb_priority: 3
         mongodb-node-2:
           ansible_host: localhost
           ansible_port: 2222
           mongodb_replication_role: secondary
+          mongodb_priority: 2
         mongodb-node-3:
           ansible_host: localhost
           ansible_port: 2223
           mongodb_replication_role: secondary
+          mongodb_priority: 1
   vars:
     ansible_user: root
     ansible_python_interpreter: /usr/bin/python3
     ansible_ssh_private_key_file: id_rsa
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+
+    # User and User_init variables (from README.md / PARAMETERS.md)
+    mongodb_admin_pass: "something_secure"
+    mongodb_adminuser_name: "adminuser"
+    mongodb_adminuser_pass: "something_secure"
+
+    # Example custom users
+    mongodb_user:
+      - database: "app_db"
+        name: "app_user"
+        password: "app_password"
+        roles: "readWrite"
+        state: "present"
+        update_password: "on_create"

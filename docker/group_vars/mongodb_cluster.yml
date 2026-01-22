@@ -4,23 +4,35 @@ mongodb_major_version: "7.0"
 mongodb_edition: enterprise
 mongodb_repo: true
 
-# Use system python for DNF compatibility on UBI8
-ansible_python_interpreter: /usr/libexec/platform-python
+# Use standard Python 3 (3.9+) on UBI 9
+ansible_python_interpreter: /usr/bin/python3
+
+# User initialization and custom users
+mongodb_admin_pass: "something_secure"
+mongodb_adminuser_name: "adminuser"
+mongodb_adminuser_pass: "something_secure"
+
+mongodb_user:
+  - database: "app_db"
+    name: "app_user"
+    password: "app_password"
+    roles: "readWrite"
+    state: "present"
+    update_password: "on_create"
 
 mongodb_replication:
   replSetName: rs0
 
+# Priority for members (custom role variable)
+# mongodb_priority: 3 # Set on host level in inventory
+
 # PSS Topology identification
 mongodb_primary: "{{ 'primary' in mongodb_replication_role }}"
-
-# Administrative credentials
-mongodb_admin_pass: "admin123"
-mongodb_adminuser_name: "admin"
-mongodb_adminuser_pass: "admin123"
 
 # Backup credentials (needed to pass role assertions)
 mongodb_backup:
   enabled: false
+  user: "backup"
   pass: "backup_password_123"
 
 # Networking
@@ -32,3 +44,9 @@ mongodb_net:
 mongodb_security:
   authorization: enabled
   keyFile: /etc/mongodb.key
+
+# Process management (Disable fork for supervisor/container)
+mongodb_processmanagement:
+  fork: false
+  pidFilePath: /var/run/mongodb/mongod.pid
+  timeZoneInfo: /usr/share/zoneinfo

@@ -10,11 +10,21 @@
     owner: root
     group: root
     mode: "0644"
+  vars:
+    replication_init: false
 
-- name: user_init | start mongo
+- name: user_init | start mongo (systemd)
   ansible.builtin.service:
     name: mongod
     state: started
+  when: mongodb_is_systemd
+
+- name: user_init | supervisor fallback
+  ansible.builtin.include_tasks: supervisor.yml
+  when: not mongodb_is_systemd
+  vars:
+    mongodb_conf_set:
+      changed: true
 
 - name: user_init | create users admin, adminuser and backup
   community.mongodb.mongodb_user:

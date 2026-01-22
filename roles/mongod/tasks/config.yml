@@ -12,7 +12,7 @@
     mode: "0644"
   register: mongodb_conf_set
 
-- name: Conf | Ensure mongod is started and enabled (systemd)
+- name: conf | ensure mongod is started and enabled (systemd)
   ansible.builtin.service:
     name: mongod
     state: started
@@ -20,11 +20,11 @@
   when: mongodb_is_systemd
   ignore_errors: true
 
-- name: Conf | Supervisor fallback
+- name: conf | supervisor fallback
   ansible.builtin.include_tasks: supervisor.yml
   when: not mongodb_is_systemd
 
-- name: Conf | Restart mongod service one by one, after a config change, if set (systemd)
+- name: conf | restart mongod service one by one, after a config change, if set (systemd)
   ansible.builtin.service:
     name: mongod
     state: restarted
@@ -33,6 +33,17 @@
   loop: "{{ ansible_play_hosts }}"
   when:
     - mongodb_is_systemd
+    - mongodb_restart_config
+    - mongodb_conf_set.changed
+  ignore_errors: true
+
+- name: conf | restart mongod service one by one, after a config change, if set (supervisor)
+  ansible.builtin.command: supervisorctl restart mongod
+  run_once: true
+  delegate_to: "{{ item }}"
+  loop: "{{ ansible_play_hosts }}"
+  when:
+    - not mongodb_is_systemd
     - mongodb_restart_config
     - mongodb_conf_set.changed
   ignore_errors: true

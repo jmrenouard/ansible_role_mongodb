@@ -7,7 +7,7 @@
   ansible.builtin.dnf:
     name: tuned
     state: present
-  when: ansible_facts['virtualization_type'] != 'docker'
+  when: not mongodb_is_container
 
 - name: thp | tuned dir
   ansible.builtin.file:
@@ -16,7 +16,7 @@
     owner: root
     group: root
     mode: "0755"
-  when: ansible_facts['virtualization_type'] != 'docker'
+  when: not mongodb_is_container
 
 - name: thp | tuned conf file
   ansible.builtin.template:
@@ -26,7 +26,7 @@
     group: root
     mode: "0644"
   register: tuned_conf
-  when: ansible_facts['virtualization_type'] != 'docker'
+  when: not mongodb_is_container
 
 - name: thp | enable tuned profile
   ansible.builtin.command: tuned-adm profile virtual-guest-no-thp
@@ -40,7 +40,7 @@
   ansible.builtin.command: cat /sys/kernel/mm/transparent_hugepage/enabled
   changed_when: false
   register: check_hugepages
-  when: ansible_facts['virtualization_type'] != 'docker'
+  when: not mongodb_is_container
 
 - name: thp | load tuned-adm profile in kernel
   ansible.builtin.command: /sbin/tuned-adm profile no-thp
@@ -58,7 +58,7 @@
     group: root
     mode: "0644"
   notify: systemd reload
-  when: ansible_facts['virtualization_type'] != 'docker'
+  when: not mongodb_is_container
 
 - name: thp | enable and start transparent hugepages when set
   ansible.builtin.service:

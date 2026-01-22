@@ -18,11 +18,12 @@
 - name: Detect | Set systemd status
   ansible.builtin.set_fact:
     mongodb_is_systemd: "{{ mongodb_init_system.stdout == 'systemd' }}"
+    mongodb_is_container: "{{ ansible_facts['virtualization_type'] | default('') in ['docker', 'container', 'podman'] }}"
 
 - ansible.builtin.include_tasks: install.yml
 
 - ansible.builtin.include_tasks: thp.yml
-  when: mongodb_thp
+  when: mongodb_thp and not mongodb_is_container
 
 - ansible.builtin.include_tasks: numa.yml
   when: mongodb_numa

@@ -1,9 +1,9 @@
-FROM redhat/ubi8:8.10
+FROM redhat/ubi9:9.4
 
 # Environment variables
 ENV TERM=xterm
 
-# Install system utilities, SSH and Python 3.9 (Native on Rocky 9)
+# Install system utilities, SSH and Python 3.9 (Native on UBI 9)
 RUN dnf install -y --allowerasing \
   openssh-server \
   openssl \
@@ -24,9 +24,6 @@ RUN dnf install -y --allowerasing \
 
 # Install Supervisor via pip
 RUN pip3 install --no-cache-dir supervisor
-
-# Create mongod user and group
-RUN groupadd -r mongod && useradd -r -g mongod mongod
 
 
 # Configure SSH

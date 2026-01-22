@@ -50,7 +50,7 @@
 - name: keyfile | block to copy keyfile when none has one
   block:
     - name: keyfile | create when none has a keyfile
-      ansible.builtin.command: >-
+      ansible.builtin.shell: >-
         openssl rand -base64 741 > {{ mongodb_security.keyFile }} ;
         chmod 400 {{ mongodb_security.keyFile }} ;
         chown mongod: {{ mongodb_security.keyFile }}

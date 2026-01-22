@@ -7,6 +7,7 @@
   ansible.builtin.dnf:
     name: numactl
     state: present
+  when: not mongodb_is_container
 
 - name: numa | set zone reclaim mode
   ansible.builtin.sysctl:
@@ -15,7 +16,7 @@
     state: present
     sysctl_set: true
     reload: true
-  when: ansible_facts['virtualization_type'] != 'docker'
+  when: not mongodb_is_container
 
 - name: numa | service file
   ansible.builtin.lineinfile:
@@ -23,3 +24,6 @@
     regexp: "^ExecStart="
     line: "ExecStart=/usr/bin/numactl --interleave=all /usr/bin/mongod $OPTIONS"
   notify: systemd reload
+  when:
+    - mongodb_is_systemd
+    - not mongodb_is_container

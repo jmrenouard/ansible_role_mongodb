@@ -16,7 +16,8 @@ storage:
   {% endif %}
 
 processManagement:
-  fork: true
+  fork: {{ mongodb_is_systemd | lower }}
+
   pidFilePath: /var/run/mongodb/mongod.pid
   timeZoneInfo: /usr/share/zoneinfo
 
