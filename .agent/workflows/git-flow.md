@@ -1,8 +1,11 @@
 ---
-description: git-sync
+trigger: explicit_call
+description: Git flow synchronization and release tagging protocol
+category: governance
 ---
 
-Trigger Command: /git-sync  
+# Git Flow Synchronization
+
 Description: This workflow automates the lifecycle of a release, ensuring strict adherence to changelog management, clean branching strategies, and proper version tagging.
 
 ## **Workflow Steps**

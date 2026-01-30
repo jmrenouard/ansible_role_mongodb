@@ -1,5 +1,7 @@
 ---
-description: ideate
+trigger: explicit_call
+description: Structured brainstorming and feature ideation protocol
+category: skill
 ---
 
 # Ideation Workflow

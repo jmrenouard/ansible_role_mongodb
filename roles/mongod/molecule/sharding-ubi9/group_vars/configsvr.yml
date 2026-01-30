@@ -1,0 +1,7 @@
+---
+mongodb_replication_role: primary
+mongodb_primary: true
+mongodb_sharding_config_members:
+  - { host: "cs-1:27017", priority: 1 }
+  - { host: "cs-2:27017", priority: 1 }
+  - { host: "cs-3:27017", priority: 1 }

@@ -1,0 +1,50 @@
+# Ansible Role: mongodb
+# File: /molecule/tls-ubi9/molecule.yml
+
+---
+scenario:
+  name: tls-ubi9
+dependency:
+  name: galaxy
+driver:
+  name: docker
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_ROLES_PATH: ../../../
+  inventory:
+    host_vars:
+      test-tls-01:
+        mongodb_version: 6.0
+        mongodb_tls_generate_certs: true
+        mongodb_manage_service: false
+        mongodb_admin_pass: "molecule_pass"
+        mongodb_adminuser_pass: "molecule_pass"
+        mongodb_backup:
+          enabled: false
+          pass: "molecule_pass"
+        mongodb_net:
+          bindIp: 0.0.0.0
+          port: 27017
+          tls:
+            mode: requireTLS
+verifier:
+  name: ansible
+platforms:
+  - name: test-tls-01
+    hostname: test-tls-01
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    pull: true
+    command: "tail -f /dev/null"
+    volumes:
+      - "/var/lib/containerd"
+    tmpfs:
+      - /run
+      - /tmp
+    tty: true
+    environment:
+      container: docker
+    pre_build_image: true
+    networks:
+      - name: test_network

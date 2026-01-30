@@ -4,17 +4,17 @@
 
 ---
 mongodb_repo: true
-mongodb_version: 5.0
-mongodb_edition: org  # org or enterprise
+mongodb_version: 6.0
+mongodb_edition: org # org or enterprise
 mongodb_pymongo_version: 4.7.2
 
 # Apply production recommendations, see readme
 mongodb_thp: true
 mongodb_numa: true
 
-mongodb_admin_pass: 'change_me'
+mongodb_admin_pass: "change_me"
 mongodb_adminuser_name: adminuser
-mongodb_adminuser_pass: 'change_me'
+mongodb_adminuser_pass: "change_me"
 
 # --- Defaults for mongod.conf
 # See readme
@@ -40,26 +40,43 @@ mongodb_processmanagement:
   timeZoneInfo: /usr/share/zoneinfo
 
 # The keyfile is automatically generated
-mongodb_security: ''
+mongodb_security: ""
 
-mongodb_operationprofiling: ''
+mongodb_operationprofiling: ""
 
-mongodb_replication: ''
+mongodb_replication: ""
 
-mongodb_sharding: ''
+mongodb_sharding: ""
+mongodb_sharding_role: "" # configsvr, shardsvr, mongos
+mongodb_sharding_config_members: []
+mongodb_sharding_shard_members: []
+mongodb_sharding_shards: []
 
-mongodb_auditlog: ''
+mongodb_auditlog: ""
 
-mongodb_snmp: ''
+mongodb_snmp: ""
 
-mongodb_custom_cnf: ''
+# --- TLS/SSL Configuration
+mongodb_tls_generate_certs: false
+mongodb_tls_dir: /etc/ssl/mongodb
+mongodb_tls_ca_cert: "{{ mongodb_tls_dir }}/mongodb-ca.crt"
+mongodb_tls_ca_key: "{{ mongodb_tls_dir }}/mongodb-ca.key"
+mongodb_tls_node_cert: "{{ mongodb_tls_dir }}/mongodb.pem" # Combined cert + key
+mongodb_tls_node_key: "{{ mongodb_tls_dir }}/mongodb.key"
+
+# CA Distinguished Name
+mongodb_tls_ca_dn: "/C=FR/ST=Paris/L=Paris/O=MongoDB/CN=MongoDB-CA"
+# Server Distinguished Name (Subject Alternative Names will be added automatically)
+mongodb_tls_server_dn: "/C=FR/ST=Paris/L=Paris/O=MongoDB/CN={{ ansible_fqdn }}"
+
+mongodb_custom_cnf: ""
 
 # ---
 
 # When replication is desired, the value should either be
 # primary, secondary or aribter
 # Ensure to include a valid number of nodes, see readme
-mongodb_replication_role: ''
+mongodb_replication_role: ""
 
 # Define databases and users
 # See readme for examples
@@ -78,11 +95,11 @@ mongodb_backup:
   path: /var/lib/mongodb_backups
   owner: mongod
   group: mongod
-  mode: '0660'
+  mode: "0660"
   hour: 2
   minute: 5
   day: "*"
-  retention: 46  # in hours
+  retention: 46 # in hours
 
 # Restart mongo after a config change
 mongodb_restart_config: true

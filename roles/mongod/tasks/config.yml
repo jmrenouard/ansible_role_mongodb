@@ -17,12 +17,16 @@
     name: mongod
     state: started
     enabled: true
-  when: mongodb_is_systemd
+  when:
+    - mongodb_is_systemd
+    - mongodb_manage_service | default(true) | bool
   ignore_errors: true
 
 - name: conf | supervisor fallback
   ansible.builtin.include_tasks: supervisor.yml
-  when: not mongodb_is_systemd
+  when:
+    - not mongodb_is_systemd
+    - mongodb_manage_service | default(true) | bool
 
 - name: conf | restart mongod service one by one, after a config change, if set (systemd)
   ansible.builtin.service:
@@ -35,6 +39,7 @@
     - mongodb_is_systemd
     - mongodb_restart_config
     - mongodb_conf_set.changed
+    - mongodb_manage_service | default(true) | bool
   ignore_errors: true
 
 - name: conf | restart mongod service one by one, after a config change, if set (supervisor)

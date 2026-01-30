@@ -1,0 +1,61 @@
+---
+# Sharding Orchestration for MongoDB
+
+- name: Sharding | Initialize Config Server Replica Set
+  community.mongodb.mongodb_replicaset:
+    login_host: localhost
+    login_port: "{{ mongodb_net.port }}"
+    login_user: admin
+    login_password: "{{ mongodb_admin_pass }}"
+    replica_set: "{{ mongodb_replication.replSetName }}"
+    members: "{{ mongodb_sharding_config_members }}"
+    config_svr: true
+  when:
+    - mongodb_sharding_role == 'configsvr'
+    - mongodb_primary | default(false) | bool
+  tags: sharding
+
+- name: Sharding | Initialize Shard Replica Set
+  community.mongodb.mongodb_replicaset:
+    login_host: localhost
+    login_port: "{{ mongodb_net.port }}"
+    login_user: admin
+    login_password: "{{ mongodb_admin_pass }}"
+    replica_set: "{{ mongodb_replication.replSetName }}"
+    members: "{{ mongodb_sharding_shard_members }}"
+    shard_svr: true
+  when:
+    - mongodb_sharding_role == 'shardsvr'
+    - mongodb_primary | default(false) | bool
+  tags: sharding
+
+- name: Sharding | Mongos Configuration
+  block:
+    - name: Sharding | Ensure mongos service is managed
+      ansible.builtin.template:
+        src: mongod.conf.j2
+        dest: /etc/mongos.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: "restart mongos"
+
+    - name: Sharding | Start mongos service
+      ansible.builtin.service:
+        name: mongos
+        state: started
+        enabled: true
+      when: mongodb_manage_service | default(true) | bool
+
+    - name: Sharding | Add Shards to Cluster
+      community.mongodb.mongodb_shard:
+        login_host: localhost
+        login_port: "{{ mongodb_net.port }}"
+        login_user: admin
+        login_password: "{{ mongodb_admin_pass }}"
+        shard: "{{ item.shard }}"
+        address: "{{ item.address }}"
+      loop: "{{ mongodb_sharding_shards }}"
+      when: mongodb_primary | default(false) | bool
+  when: mongodb_sharding_role == 'mongos'
+  tags: sharding

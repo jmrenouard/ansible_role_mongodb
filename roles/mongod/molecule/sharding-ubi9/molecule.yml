@@ -1,0 +1,114 @@
+# Ansible Role: mongodb
+# File: /molecule/sharding-ubi9/molecule.yml
+
+---
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+scenario:
+  name: sharding-ubi9
+dependency:
+  name: galaxy
+driver:
+  name: docker
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_ROLES_PATH: ../../
+  inventory:
+    group_vars:
+      all:
+        mongodb_use_template_for_hosts: false
+        mongodb_version: "6.0"
+        mongodb_manage_service: false
+      configsvr:
+        mongodb_sharding_role: configsvr
+        mongodb_replication:
+          replSetName: configRS
+      shardA:
+        mongodb_sharding_role: shardsvr
+        mongodb_replication:
+          replSetName: shardARS
+      shardB:
+        mongodb_sharding_role: shardsvr
+        mongodb_replication:
+          replSetName: shardBRS
+      mongos:
+        mongodb_sharding_role: mongos
+    host_vars:
+      router-1:
+        mongodb_sharding_shards:
+          - shard: shardARS
+            address: "shardARS/sA-1:27017,sA-2:27017,sA-3:27017"
+          - shard: shardBRS
+            address: "shardBRS/sB-1:27017,sB-2:27017,sB-3:27017"
+        mongodb_sharding:
+          configDB: "configRS/cs-1:27017,cs-2:27017,cs-3:27017"
+verifier:
+  name: ansible
+platforms:
+  # Config Servers
+  - name: cs-1
+    hostname: cs-1
+    groups: [configsvr]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  - name: cs-2
+    hostname: cs-2
+    groups: [configsvr]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  - name: cs-3
+    hostname: cs-3
+    groups: [configsvr]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  # Shard A
+  - name: sA-1
+    hostname: sA-1
+    groups: [shardA]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  - name: sA-2
+    hostname: sA-2
+    groups: [shardA]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  - name: sA-3
+    hostname: sA-3
+    groups: [shardA]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  # Shard B
+  - name: sB-1
+    hostname: sB-1
+    groups: [shardB]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  - name: sB-2
+    hostname: sB-2
+    groups: [shardB]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  - name: sB-3
+    hostname: sB-3
+    groups: [shardB]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]
+  # Mongos Router
+  - name: router-1
+    hostname: router-1
+    groups: [mongos]
+    image: registry.access.redhat.com/ubi9/ubi:latest
+    privileged: true
+    networks: [{ name: shard_network }]

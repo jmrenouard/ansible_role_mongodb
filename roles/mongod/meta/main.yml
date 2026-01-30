@@ -4,24 +4,21 @@
 
 ---
 galaxy_info:
-  author: Kevin Csuka
+  author: jmrenouard
   description: Ansible role to setup and configure MongoDB
-  namespace: kcsuka
+  namespace: jmrenouard
   role_name: mongodb
-  version: 1.4.4
+  version: 1.5.1
   license: Apache License, Version 2.0
   min_ansible_version: "2.9"
   platforms:
     - name: EL
       versions:
         - "8"
+        - "9"
   galaxy_tags:
     - database
     - mongodb
-    - mongo
     - cluster
-    - arbiter
-    - system
-    - nosql
 
 dependencies: []

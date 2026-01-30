@@ -1,5 +1,31 @@
 # @Changelog
 
+## 1.5.1 (2026-01-31)
+
+* feat: add supervisor support to MongoDB and mongos restart handlers.
+* fix: guard systemd reload task with `mongodb_is_systemd`.
+
+## 1.5.0 (2026-01-30)
+
+* feat: full fork of `csuka/ansible_role_mongodb` with metadata scrubbing.
+* docs: add inspiration credit for original author in README.md.
+* chore: update `meta/main.yml` with project-specific namespace and author.
+* chore: consolidate agent governance assets (rules and workflows) and standardize to AFF.
+
+## 1.4.5 (2026-01-30)
+
+* chore: execute `/hey-agent check` governance audit and alignment
+* chore: consolidate redundant `.agent/rules/` into a single `ARCHITECTURE.md`
+* feat: rewrite `compliance-sentinel.md` workflow to focus on Ansible & linting standards
+* feat: create root `Makefile` for unified `lint` and `test` (Molecule) orchestration
+* feat: initialize `remembers.md` session-level memory buffer
+* chore: initialize Python 3 virtual environment and install project dependencies
+* chore: merge redundant `run-tests.md` and `molecule-test.md` into `test-orchestration.md`
+* feat: implement automated TLS/SSL lifecycle (CA/Cert generation, PEM concatenation)
+* fix: standardize `host_count` integer comparisons across the role to stabilize single-node scenarios
+* feat: add `mongodb_manage_service` flag for better containerized Molecule testing support
+* feat: create `tls-ubi9` Molecule scenario for TLS verification
+
 ## 1.4.4 (2026-01-22)
 
 * fix: correct Jinja2 interpolation in member list building (resolve literal braces in hostnames)
@@ -10,7 +36,6 @@
 * fix: ensure `pkill mongod` is used during cluster initialization to prevent port conflicts
 
 ## 1.4.3 (2026-01-22)
-
 
 * feat: implement supervisor fallback for MongoDB when systemd is missing
 * feat: add supervisor configuration template and automated detection logic

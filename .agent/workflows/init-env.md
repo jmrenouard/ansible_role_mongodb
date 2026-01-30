@@ -1,5 +1,7 @@
 ---
-description: Initialize Python 3 environment and install dependencies
+trigger: explicit_call
+description: Python virtual environment and dependency initialization
+category: tool
 ---
 
 # Initialize Environment Workflow

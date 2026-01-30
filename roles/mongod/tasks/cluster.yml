@@ -8,7 +8,9 @@
   ansible.builtin.service:
     name: mongod
     state: started
-  when: mongodb_is_systemd
+  when:
+    - mongodb_is_systemd
+    - mongodb_manage_service | default(true) | bool
   ignore_errors: true
 
 - name: cluster | Supervisor fallback
@@ -19,7 +21,9 @@
   ansible.builtin.wait_for:
     port: "{{ mongodb_net.port }}"
     timeout: 30
-  when: ansible_facts['virtualization_type'] != 'docker'
+  when:
+    - ansible_facts['virtualization_type'] | default('') != 'docker'
+    - mongodb_manage_service | default(true) | bool
 
 - name: cluster | check if hosts are in clustered
   ansible.builtin.command: >-

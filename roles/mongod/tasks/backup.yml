@@ -8,7 +8,7 @@
     backup_on_host: "{{ item }}"
   loop: "{{ play_hosts }}"
   when:
-    - host_count != '1'
+    - host_count | int != 1
     - backup_on_host is undefined
     - hostvars[item].mongodb_replication_role == 'secondary'
   run_once: true
@@ -51,5 +51,5 @@
             {{ mongodb_backup.path }}/latest ; done"
 
   when: >-
-    host_count == '1' or
+    host_count | int == 1 or
     backup_on_host is defined and inventory_hostname == backup_on_host

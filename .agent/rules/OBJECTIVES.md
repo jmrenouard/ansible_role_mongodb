@@ -1,17 +1,20 @@
 ---
 trigger: always_on
+description: Project Operational Objectives and Priority Tasks
+category: governance
 ---
 
 # 🎯 OPERATIONAL OBJECTIVES
 
 $$DYNAMIC_CONTEXT$$
 
-# priority TASKS
+## priority TASKS
 
 * [ ] Implement MongoDB Replica Set orchestration in Ansible.
 * [ ] Ensure 100% idempotency across all role tasks.
 * [ ] Validate standalone and cluster scenarios via Molecule.
 * [ ] Maintain high linting score (0 errors in ansible-lint).
+* [ ] Implement prioritized tests from `TEST_SPECIFICATIONS.md`.
 
 ## Success Criteria
 

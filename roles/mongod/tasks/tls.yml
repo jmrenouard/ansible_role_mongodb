@@ -1,0 +1,88 @@
+---
+- name: TLS | Ensure TLS directory exists
+  ansible.builtin.file:
+    path: "{{ mongodb_tls_dir }}"
+    state: directory
+    owner: mongod
+    group: mongod
+    mode: "0700"
+
+- name: TLS | Certificate Generation (Self-Signed)
+  when: mongodb_tls_generate_certs | bool
+  block:
+    - name: TLS | Generate CA Private Key
+      community.crypto.openssl_privatekey:
+        path: "{{ mongodb_tls_ca_key }}"
+        size: 4096
+        type: RSA
+      run_once: true
+      delegate_to: "{{ mongodb_primary_node | default(ansible_play_hosts[0]) }}"
+
+    - name: TLS | Generate CA CSR
+      community.crypto.openssl_csr:
+        path: "{{ mongodb_tls_ca_cert }}.csr"
+        privatekey_path: "{{ mongodb_tls_ca_key }}"
+        common_name: "MongoDB-CA"
+        basic_constraints: ["CA:TRUE"]
+        basic_constraints_critical: true
+        key_usage: ["keyCertSign"]
+      run_once: true
+      delegate_to: "{{ mongodb_primary_node | default(ansible_play_hosts[0]) }}"
+
+    - name: TLS | Generate CA Certificate
+      community.crypto.x509_certificate:
+        path: "{{ mongodb_tls_ca_cert }}"
+        csr_path: "{{ mongodb_tls_ca_cert }}.csr"
+        privatekey_path: "{{ mongodb_tls_ca_key }}"
+        provider: selfsigned
+      run_once: true
+      delegate_to: "{{ mongodb_primary_node | default(ansible_play_hosts[0]) }}"
+
+    - name: TLS | Fetch CA Cert to Controller
+      ansible.builtin.fetch:
+        src: "{{ mongodb_tls_ca_cert }}"
+        dest: "/tmp/mongodb-ca.crt"
+        flat: true
+      run_once: true
+      delegate_to: "{{ mongodb_primary_node | default(ansible_play_hosts[0]) }}"
+
+    - name: TLS | Distribute CA Cert to all nodes
+      ansible.builtin.copy:
+        src: "/tmp/mongodb-ca.crt"
+        dest: "{{ mongodb_tls_ca_cert }}"
+        owner: mongod
+        group: mongod
+        mode: "0644"
+
+    - name: TLS | Generate Node Private Key
+      community.crypto.openssl_privatekey:
+        path: "{{ mongodb_tls_node_key }}"
+        size: 2048
+        type: RSA
+
+    - name: TLS | Generate Node CSR
+      community.crypto.openssl_csr:
+        path: "{{ mongodb_tls_node_cert }}.csr"
+        privatekey_path: "{{ mongodb_tls_node_key }}"
+        common_name: "{{ ansible_fqdn }}"
+        subject_alt_name:
+          - "DNS:{{ ansible_fqdn }}"
+          - "DNS:{{ ansible_hostname }}"
+          - "IP:{{ ansible_default_ipv4.address }}"
+          - "IP:127.0.0.1"
+
+    - name: TLS | Sign Node Certificate with CA
+      community.crypto.x509_certificate:
+        path: "{{ mongodb_tls_node_cert }}.crt"
+        csr_path: "{{ mongodb_tls_node_cert }}.csr"
+        ownca_path: "{{ mongodb_tls_ca_cert }}"
+        ownca_privatekey_path: "{{ mongodb_tls_ca_key }}"
+        provider: ownca
+      delegate_to: "{{ mongodb_primary_node | default(ansible_play_hosts[0]) }}"
+
+    - name: TLS | Combine Cert and Key for MongoDB PEM file
+      ansible.builtin.shell: |
+        cat {{ mongodb_tls_node_cert }}.crt {{ mongodb_tls_node_key }} > {{ mongodb_tls_node_cert }}
+        chmod 600 {{ mongodb_tls_node_cert }}
+        chown mongod:mongod {{ mongodb_tls_node_cert }}
+      changed_when: true

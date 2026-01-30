@@ -14,18 +14,23 @@ dependency:
 driver:
   name: docker
 provisioner:
-  name: ansible
+  inventory:
+    group_vars:
+      all:
+        mongodb_version: "6.0"
+        mongodb_manage_service: false
+        mongodb_is_systemd: false
   env:
-    ANSIBLE_ROLES_PATH: ../../
+    ANSIBLE_ROLES_PATH: ../../../:../../
+    ANSIBLE_VARS_PLUGINS_ENABLED: host_group_vars,vars_plugin_filter
 verifier:
   name: ansible
 platforms:
   - name: test-multi-01
     hostname: test-multi-01
-    image: registry.access.redhat.com/ubi9/ubi:latest
+    image: registry.access.redhat.com/ubi9/ubi-init:latest
     privileged: true
     pull: true
-    command: "tail -f /dev/null"
     volumes:
       - "/var/lib/containerd"
     tmpfs:

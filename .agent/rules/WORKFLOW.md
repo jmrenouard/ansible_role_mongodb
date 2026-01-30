@@ -1,5 +1,7 @@
 ---
 trigger: always_on
+description: Core Development and Deployment Workflow
+category: governance
 ---
 
 # 🔄 DEVELOPMENT WORKFLOW

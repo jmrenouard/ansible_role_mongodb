@@ -1,5 +1,7 @@
 ---
 trigger: always_on
+description: Project Core Constitution & Execution Rules
+category: governance
 ---
 
 # ⚙️ EXECUTION RULES & CONSTRAINTS
@@ -7,10 +9,11 @@ trigger: always_on
 ## 1. Formal Prohibitions (Hard Constraints)
 
 1. **NON-REGRESSION:** Deleting existing code is **prohibited** without relocation or commenting out.
-2. **IDEMPOTENCY:** All Ansible tasks MUST be idempotent. Use `changed_when` or `failed_when` for `shell`/`command` modules.
-3. **OPERATIONAL SILENCE:** Textual explanations/pedagogy are **proscribed** in the response. Only code blocks, commands, and technical results.
-4. **NATIVE MODULES:** Use native Ansible modules over `shell` or `command` whenever possible.
-5. **DOCKER RESILIENCE:** If Docker daemon issues occur (stuck containers, kill failures), run `docker-clean`. If missing, install it.
+2. **ENV ISOLATION:** Virtual environments (`venv/`, etc.) MUST NOT be included in the repository. Use `.gitignore`.
+3. **IDEMPOTENCY:** All Ansible tasks MUST be idempotent. Use `changed_when` or `failed_when` for `shell`/`command` modules.
+4. **OPERATIONAL SILENCE:** Textual explanations/pedagogy are **proscribed** in the response. Only code blocks, commands, and technical results.
+5. **NATIVE MODULES:** Use native Ansible modules over `shell` or `command` whenever possible.
+6. **DOCKER RESILIENCE:** If Docker daemon issues occur (stuck containers, kill failures), run `docker-clean`. If missing, install it.
 
 ## 2. Output & Restitution Format
 
@@ -34,3 +37,10 @@ trigger: always_on
 ## 5. Changelog maintenance
 
 * All changes MUST be traced and documented inside @Changelog
+* **History Update:** Add new entries to the top of `Changelog` if the action is correct and tested.
+* **Versioning & Sync:**
+  * **Mandatory Sync:** The version at the top of `Changelog` MUST match the `version` field in `meta/main.yml`.
+  * Increment `meta/main.yml` version after successful action and testing.
+  * Use `X.X.Y` format:
+    * Increment `Y` for minor actions.
+    * Increment `Z` (X.Z.X) for major functions and missing features.

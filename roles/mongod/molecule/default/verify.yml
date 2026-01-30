@@ -6,6 +6,83 @@
 - name: Verify
   hosts: all
   tasks:
-    - name: several tests should come here
-      assert:
-        that: true
+    - name: Verify | Check if mongod is already running
+      ansible.builtin.command: pgrep mongod
+      register: mongod_check
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Start mongod manually if not running
+      ansible.builtin.command: mongod --config /etc/mongod.conf --fork
+      when: mongod_check.rc != 0
+      changed_when: true
+
+    - name: Verify | Wait for MongoDB to start
+      ansible.builtin.wait_for:
+        port: 27017
+        timeout: 30
+        msg: "MongoDB failed to start manually."
+
+    - name: Verify | Get process status
+      ansible.builtin.command: pgrep mongod
+      register: mongod_process
+      changed_when: false
+      failed_when: mongod_process.rc != 0
+
+    - name: Verify | Process is running
+      ansible.builtin.assert:
+        that:
+          - mongod_process.rc == 0
+        fail_msg: "MongoDB process is not running."
+
+    - name: Verify | Network port is listening
+      ansible.builtin.wait_for:
+        port: 27017
+        timeout: 10
+        msg: "MongoDB port 27017 is not listening."
+
+    - name: Verify | Config file existence
+      ansible.builtin.stat:
+        path: /etc/mongod.conf
+      register: config_file
+
+    - name: Verify | Config file is correctly set up
+      ansible.builtin.assert:
+        that:
+          - config_file.stat.exists
+          - config_file.stat.isreg
+        fail_msg: "MongoDB configuration file /etc/mongod.conf is missing or invalid."
+
+    - name: Verify | Data directory integrity
+      ansible.builtin.stat:
+        path: /var/lib/mongo
+      register: data_dir
+
+    - name: Verify | Data directory permissions
+      ansible.builtin.assert:
+        that:
+          - data_dir.stat.exists
+          - data_dir.stat.isdir
+          - data_dir.stat.pw_name == 'mongod'
+          - data_dir.stat.gr_name == 'mongod'
+        fail_msg: "MongoDB data directory /var/lib/mongo has incorrect ownership or permissions."
+
+    - name: Verify | Operational check via mongosh
+      ansible.builtin.command: mongosh --port 27017 --quiet --eval "db.adminCommand('ping')"
+      register: mongo_ping
+      changed_when: false
+      failed_when: mongo_ping.rc != 0
+      ignore_errors: true
+
+    - name: Verify | Operational check via mongo (fallback)
+      ansible.builtin.command: mongo --port 27017 --quiet --eval "db.adminCommand('ping')"
+      register: mongo_legacy_ping
+      changed_when: false
+      failed_when: mongo_legacy_ping.rc != 0
+      when: mongo_ping is failed
+
+    - name: Verify | At least one operational check passed
+      ansible.builtin.assert:
+        that:
+          - (mongo_ping is succeeded) or (mongo_legacy_ping is defined and mongo_legacy_ping is succeeded)
+        fail_msg: "MongoDB is not responding to administrative ping command."

@@ -1,0 +1,12 @@
+# Ansible Role: mongodb
+# File: /molecule/tls-ubi9/converge.yml
+
+---
+- name: Converge
+  hosts: all
+  pre_tasks:
+    - name: Force systemd fact for container
+      ansible.builtin.set_fact:
+        mongodb_is_systemd: true
+  roles:
+    - role: mongod

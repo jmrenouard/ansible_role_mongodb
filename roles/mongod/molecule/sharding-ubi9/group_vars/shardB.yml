@@ -1,0 +1,7 @@
+---
+mongodb_replication_role: primary
+mongodb_primary: true
+mongodb_sharding_shard_members:
+  - { host: "sB-1:27017", priority: 1 }
+  - { host: "sB-2:27017", priority: 1 }
+  - { host: "sB-3:27017", priority: 1 }

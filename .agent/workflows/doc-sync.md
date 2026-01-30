@@ -1,5 +1,7 @@
 ---
-description: doc-sync
+trigger: explicit_call
+description: Project documentation synchronization and technical summary updates
+category: governance
 ---
 
 # Doc Sync

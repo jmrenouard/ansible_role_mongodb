@@ -113,4 +113,44 @@ mongodb_replication_role=secondary
 
 [mongodb_arbiter:vars]
 mongodb_replication_role=arbiter
+```ini
+[mongodb_primary]
+mongo-04.example.com
+ 
+[mongodb_secondary]
+mongo-05.example.com
+mongo-06.example.com
+ 
+[mongodb_arbiter]
+mongo-07.example.com
+ 
+[mongodb_primary:vars]
+mongodb_replication_role=primary
+ 
+[mongodb_secondary:vars]
+mongodb_replication_role=secondary
+ 
+[mongodb_arbiter:vars]
+mongodb_replication_role=arbiter
+```
+
+---
+
+## Sharded Cluster
+
+Example configuration for a sharded cluster with Config Servers, Shards, and mongos.
+
+```ini
+[configsvr]
+cs-01.example.com mongodb_sharding_role=configsvr
+cs-02.example.com mongodb_sharding_role=configsvr
+cs-03.example.com mongodb_sharding_role=configsvr
+ 
+[shardA]
+sa-01.example.com mongodb_sharding_role=shardsvr
+sa-02.example.com mongodb_sharding_role=shardsvr
+sa-03.example.com mongodb_sharding_role=shardsvr
+ 
+[mongos]
+router-01.example.com mongodb_sharding_role=mongos
 ```

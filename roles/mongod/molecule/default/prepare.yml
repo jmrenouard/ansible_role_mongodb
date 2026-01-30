@@ -5,8 +5,18 @@
   hosts: all
   gather_facts: true
   tasks:
-    - name: Install sudo
+    - name: Clean dnf cache
+      ansible.builtin.command: dnf clean all
+      changed_when: true
+      when: ansible_os_family == 'RedHat'
+
+    - name: Install core utilities
       ansible.builtin.dnf:
-        name: sudo
+        name:
+          - sudo
+          - procps-ng
+          - hostname
+          - iproute
         state: present
+        update_cache: true
       when: ansible_os_family == 'RedHat'

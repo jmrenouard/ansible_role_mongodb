@@ -9,12 +9,7 @@ mongodb_numa: false
 mongodb_admin_pass: something
 mongodb_adminuser_pass: something
 
-mongodb_user:
-  - database: burgers
-    name: bob
-    password: 12345
-    state: present
-    update_password: on_create
+mongodb_user: []
 
 mongodb_backup:
   enabled: true
@@ -27,8 +22,8 @@ mongodb_backup:
   path: /var/lib/mongodb_backups
   owner: mongod
   group: mongod
-  mode: '0660'
+  mode: "0660"
   hour: 2
   minute: 5
   day: "*"
-  retention: 46  # in hours
+  retention: 46 # in hours

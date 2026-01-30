@@ -1,0 +1,16 @@
+# Ansible Role: mongodb
+# File: /molecule/tls-ubi9/prepare.yml
+
+---
+- name: Prepare
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Install dependencies
+      ansible.builtin.dnf:
+        name:
+          - sudo
+          - procps-ng
+          - python3-cryptography
+        state: present
+      when: ansible_os_family == 'RedHat'

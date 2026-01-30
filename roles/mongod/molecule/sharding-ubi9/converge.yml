@@ -1,0 +1,14 @@
+---
+- name: Converge | Preparation
+  hosts: all
+  tasks:
+    - name: install iproute
+      dnf:
+        name: iproute
+      when: ansible_os_family == 'RedHat'
+
+- name: Converge | Deploy MongoDB Sharding Cluster
+  hosts: all
+  any_errors_fatal: true
+  roles:
+    - role: ../..

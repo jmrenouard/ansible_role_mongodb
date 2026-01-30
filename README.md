@@ -1,7 +1,9 @@
 # MongoDB
 
-An Ansible role that installs, configures and manages MongoDB for EL 8.  
-A role for Ubuntu can be [found here](https://github.com/csuka/ansible_role_mongodb_ubuntu).
+An Ansible role that installs, configures and manages MongoDB for EL 8 and EL 9.  
+
+> [!NOTE]
+> This role is inspired by [csuka/ansible_role_mongodb](https://github.com/csuka/ansible_role_mongodb).
 
 ## Deployment Warning
 
@@ -16,6 +18,7 @@ A role for Ubuntu can be [found here](https://github.com/csuka/ansible_role_mong
   and [disables transparent hugepages](https://docs.mongodb.com/manual/tutorial/transparent-huge-pages/)
 - Bootstrapping a cluster in a PSA architecture (primary, secondary, arbiter)
   - includes cluster verification
+- Orchestrating a Sharded Cluster (Config Servers, Shards, mongos)
 - Secures connection by encrypting traffic via a keyfile, auto generated
 - Install either Community or the Enterprise edition
 - Easily to configure, with a future proof configuration method
@@ -550,6 +553,7 @@ This role is tested using Molecule against Red Hat Universal Base Image (UBI) 8 
 | **replicaset-psa-ubi9** | UBI 9 | 3 | PSA | No systemd |
 | **replicaset-pss-ubi8** | UBI 8 | 5 | PSS | Systemd |
 | **replicaset-pss-ubi9** | UBI 9 | 5 | PSS | No systemd |
+| **sharding-ubi9** | UBI 9 | 10 | Sharded Cluster | No systemd |
 
 To run tests:
 

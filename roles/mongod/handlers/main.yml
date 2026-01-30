@@ -4,8 +4,34 @@
 - name: systemd reload
   ansible.builtin.systemd:
     daemon_reload: true
+  when: mongodb_is_systemd
 
 - name: restart mongod
   ansible.builtin.service:
     name: mongod
     state: restarted
+  when:
+    - mongodb_is_systemd
+    - mongodb_manage_service | default(true) | bool
+
+- name: restart mongod (supervisor)
+  ansible.builtin.command: supervisorctl restart mongod
+  listen: restart mongod
+  when:
+    - not mongodb_is_systemd
+    - mongodb_manage_service | default(true) | bool
+
+- name: restart mongos
+  ansible.builtin.service:
+    name: mongos
+    state: restarted
+  when:
+    - mongodb_is_systemd
+    - mongodb_manage_service | default(true) | bool
+
+- name: restart mongos (supervisor)
+  ansible.builtin.command: supervisorctl restart mongos
+  listen: restart mongos
+  when:
+    - not mongodb_is_systemd
+    - mongodb_manage_service | default(true) | bool

@@ -1,0 +1,38 @@
+# Ansible Role: mongodb
+# File: /molecule/tls-ubi9/verify.yml
+
+---
+- name: Verify
+  hosts: all
+  pre_tasks:
+    - name: Load role defaults
+      ansible.builtin.include_vars:
+        file: ../../defaults/main.yml
+  tasks:
+    - name: Verify | Check if certificate files exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ mongodb_tls_ca_cert }}"
+        - "{{ mongodb_tls_node_cert }}"
+      register: cert_stats
+
+    - name: Verify | Assert certificates exist
+      ansible.builtin.assert:
+        that: item.stat.exists
+      loop: "{{ cert_stats.results }}"
+
+    - name: Verify | Check MongoDB connectivity via TLS
+      ansible.builtin.command: >
+        mongosh --tls --host localhost --port {{ mongodb_net.port }}
+        --tlsCAFile {{ mongodb_tls_ca_cert }}
+        --tlsCertificateKeyFile {{ mongodb_tls_node_cert }}
+        --eval 'db.runCommand({ connectionStatus: 1 })'
+      register: mongosh_out
+      changed_when: false
+      when: mongodb_manage_service | default(true) | bool
+
+    - name: Verify | Assert TLS connectivity successful
+      ansible.builtin.assert:
+        that: "'authenticatedUsers' in mongosh_out.stdout"
+      when: mongodb_manage_service | default(true) | bool

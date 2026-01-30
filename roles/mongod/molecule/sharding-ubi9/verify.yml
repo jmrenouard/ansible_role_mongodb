@@ -1,0 +1,28 @@
+---
+- name: Verify | Connection
+  hosts: all
+  tasks:
+    - name: Verify | Check mongod/mongos process
+      ansible.builtin.shell: "ps aux | grep -E 'mongod|mongos' | grep -v grep"
+      changed_when: false
+      register: process_check
+
+    - name: Verify | Assert process is running
+      ansible.builtin.assert:
+        that: process_check.rc == 0
+        fail_msg: "MongoDB process not found on {{ inventory_hostname }}"
+
+- name: Verify | Sharding Cluster Status
+  hosts: mongos
+  tasks:
+    - name: Verify | Check Shard Status
+      ansible.builtin.command: "mongosh --port 27017 --quiet --eval 'sh.status()'"
+      register: shard_status
+      changed_when: false
+
+    - name: Verify | Assert Shards are joined
+      ansible.builtin.assert:
+        that:
+          - "'shardARS' in shard_status.stdout"
+          - "'shardBRS' in shard_status.stdout"
+        fail_msg: "Shards not properly registered in cluster"

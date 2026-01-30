@@ -21,7 +21,9 @@
 
 - name: user_init | supervisor fallback
   ansible.builtin.include_tasks: supervisor.yml
-  when: not mongodb_is_systemd
+  when:
+    - not mongodb_is_systemd
+    - mongodb_manage_service | default(true) | bool
   vars:
     mongodb_conf_set:
       changed: true

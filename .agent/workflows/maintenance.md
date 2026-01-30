@@ -1,5 +1,7 @@
 ---
-description: maintenance
+trigger: explicit_call
+description: Periodic project maintenance, cleanup, and dependency updates
+category: governance
 ---
 
 # Maintenance Workflow

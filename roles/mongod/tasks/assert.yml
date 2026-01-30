@@ -9,7 +9,7 @@
 
 - name: Assert | that uneven amount of hosts are set
   ansible.builtin.assert:
-    that: "{{ host_count | int % 2 != 0 }}"
+    that: host_count | int % 2 != 0
 
 - name: Assert | that naming is set correctly for replication roles
   ansible.builtin.assert:
@@ -17,7 +17,7 @@
       mongodb_replication_role == 'arbiter' or
       mongodb_replication_role == 'secondary' or
       mongodb_replication_role == 'primary'
-  when: host_count != '1'
+  when: host_count | int != 1
 
 - name: Assert | set fact for roles
   ansible.builtin.set_fact:
@@ -30,7 +30,7 @@
     that:
       - mongodb_replication_role == ''
       - mongodb_security.keyFile is not defined
-  when: host_count == '1'
+  when: host_count | int == 1
 
 - name: Assert | that passwords are changed
   ansible.builtin.assert:
@@ -90,4 +90,4 @@
           - mongodb_secondary is defined
 
   run_once: true
-  when: host_count != '1'
+  when: host_count | int != 1

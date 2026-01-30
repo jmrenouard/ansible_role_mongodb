@@ -20,6 +20,13 @@ processManagement:
 
 net:
 {{ mongodb_net | to_nice_yaml(indent=2) | indent(width=2, first=True) }}
+{% if mongodb_net.ssl is defined or mongodb_net.tls is defined or (mongodb_tls_generate_certs | bool) %}
+  tls:
+    mode: "{{ mongodb_net.tls.mode | default(mongodb_net.ssl.mode | default('disabled')) }}"
+    certificateKeyFile: "{{ mongodb_tls_node_cert }}"
+    CAFile: "{{ mongodb_tls_ca_cert }}"
+    allowConnectionsWithoutCertificates: {{ mongodb_tls_allow_no_cert | default(true) | lower }}
+{% endif %}
 
 {% if mongodb_security != '' %}
 security:
