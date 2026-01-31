@@ -3,7 +3,11 @@
 # Description: Managed by doc-sync workflow
 
 ---
+- name: Discovery inclusion
+  ansible.builtin.include_tasks: discovery.yml
+
 - name: keyfile | set fact to copy keyfile from a host
+
   ansible.builtin.set_fact:
     keyfile_host: "{{ item }}"
   when: hostvars[item].mongodb_primary

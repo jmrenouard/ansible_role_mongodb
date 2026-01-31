@@ -3,7 +3,11 @@
 # Description: Managed by doc-sync workflow
 
 ---
+- name: Discovery inclusion
+  ansible.builtin.include_tasks: discovery.yml
+
 - name: user_init | set temporary conf
+
   ansible.builtin.template:
     src: mongod_init.conf.j2
     dest: /etc/mongod.conf

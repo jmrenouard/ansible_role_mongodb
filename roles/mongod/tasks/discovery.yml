@@ -1,0 +1,29 @@
+# Ansible Role: mongodb
+# File: /tasks/discovery.yml
+# Description: Centralize fact detection for autonomy
+
+---
+- name: Discovery | Set host count
+  ansible.builtin.set_fact:
+    host_count: "{{ ansible_play_hosts | length }}"
+  when: host_count is not defined
+
+- name: Discovery | Check if systemd is running
+  ansible.builtin.command: ps -p 1 -o comm=
+  register: mongodb_init_system
+  changed_when: false
+  ignore_errors: true
+  when: mongodb_is_systemd is not defined
+
+- name: Discovery | Set environment facts
+  ansible.builtin.set_fact:
+    mongodb_is_systemd: "{{ mongodb_init_system.stdout | default('') == 'systemd' }}"
+    mongodb_is_container: "{{ ansible_facts['virtualization_type'] | default('') in ['docker', 'container', 'podman'] }}"
+  when: mongodb_is_systemd is not defined or mongodb_is_container is not defined
+
+- name: Discovery | Set replication facts
+  ansible.builtin.set_fact:
+    mongodb_primary: "{{ (mongodb_replication_role | default('') == 'primary') or (host_count | int == 1) }}"
+    mongodb_secondary: "{{ mongodb_replication_role | default('') == 'secondary' }}"
+    mongodb_arbiter: "{{ mongodb_replication_role | default('') == 'arbiter' }}"
+  when: mongodb_primary is not defined

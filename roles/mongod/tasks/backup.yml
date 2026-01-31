@@ -3,7 +3,11 @@
 # Description: Managed by doc-sync workflow
 
 ---
+- name: Discovery inclusion
+  ansible.builtin.include_tasks: discovery.yml
+
 - name: backup | set fact for first secondary in play
+
   ansible.builtin.set_fact:
     backup_on_host: "{{ item }}"
   loop: "{{ play_hosts }}"

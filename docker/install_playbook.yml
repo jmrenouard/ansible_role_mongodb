@@ -1,0 +1,5 @@
+---
+- name: Deploy MongoDB Cluster
+  hosts: mongodb_cluster
+  roles:
+    - mongod

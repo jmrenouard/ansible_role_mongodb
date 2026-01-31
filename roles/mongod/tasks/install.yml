@@ -3,10 +3,19 @@
 # Description: Managed by doc-sync workflow
 
 ---
+- name: Discovery inclusion
+  ansible.builtin.include_tasks: discovery.yml
+
+- name: install | custom tasks inclusion
+  ansible.builtin.include_tasks: "{{ mongodb_install_custom_tasks }}"
+  when: mongodb_install_custom_tasks | default('') != ''
+
 - name: install | repo gpg key
   ansible.builtin.rpm_key:
     key: https://www.mongodb.org/static/pgp/server-{{ mongodb_major_version | default(mongodb_version) }}.asc
-  when: mongodb_repo
+  when:
+    - mongodb_repo
+    - mongodb_install_custom_tasks | default('') == ''
 
 - name: install | repo
   ansible.builtin.yum_repository:
@@ -22,7 +31,9 @@
     enabled: true
     gpgcheck: true
     gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongodb_major_version | default(mongodb_version) }}.asc
-  when: mongodb_repo
+  when:
+    - mongodb_repo
+    - mongodb_install_custom_tasks | default('') == ''
 
 - name: install | group mongod
   ansible.builtin.group:
@@ -48,11 +59,13 @@
       - python3-devel
       - python3-pip
     state: present
+  when: mongodb_install_custom_tasks | default('') == ''
 
 - name: install | mongo edition {{ mongodb_edition }}
   ansible.builtin.dnf:
     name: mongodb-{{ mongodb_edition }}
     state: present
+  when: mongodb_install_custom_tasks | default('') == ''
 
 - name: install | data folder
   ansible.builtin.file:

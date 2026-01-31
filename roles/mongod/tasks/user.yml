@@ -3,7 +3,11 @@
 # Description: Managed by doc-sync workflow
 
 ---
+- name: Discovery inclusion
+  ansible.builtin.include_tasks: discovery.yml
+
 - name: user | set defined users and databases
+
   community.mongodb.mongodb_user:
     login_host: localhost
     login_port: "{{ mongodb_net.port }}"

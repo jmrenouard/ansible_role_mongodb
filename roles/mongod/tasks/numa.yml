@@ -3,7 +3,11 @@
 # Description: Managed by doc-sync workflow
 
 ---
+- name: Discovery inclusion
+  ansible.builtin.include_tasks: discovery.yml
+
 - name: numa | install numactl
+
   ansible.builtin.dnf:
     name: numactl
     state: present

@@ -1,4 +1,7 @@
 ---
+- name: Discovery inclusion
+  ansible.builtin.include_tasks: discovery.yml
+
 # Sharding Orchestration for MongoDB
 
 - name: Sharding | Initialize Config Server Replica Set

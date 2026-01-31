@@ -1,5 +1,15 @@
 # @Changelog
 
+## 1.5.3 (2026-01-31)
+
+* feat: add `mongodb_tls_custom_tasks` hook for alternative SSL/TLS certificate management.
+* feat: add example custom TLS task file `roles/mongod/tasks/tls_custom.example.yml`.
+
+## 1.5.2 (2026-01-31)
+
+* feat: add `mongodb_install_custom_tasks` hook for alternative binary installation methods.
+* feat: add example custom installation task file `roles/mongod/tasks/install_custom.example.yml`.
+
 ## 1.5.1 (2026-01-31)
 
 * feat: add supervisor support to MongoDB and mongos restart handlers.

@@ -10,62 +10,54 @@
 - ansible.builtin.include_tasks: assert.yml
   tags: [mongodb_assert, mongodb_all]
 
-- name: Detect | Check if systemd is running
-  ansible.builtin.command: ps -p 1 -o comm=
-  register: mongodb_init_system
-  changed_when: false
-  ignore_errors: true
-
-- name: Detect | Set systemd status
-  ansible.builtin.set_fact:
-    mongodb_is_systemd: "{{ (mongodb_init_system is defined and mongodb_init_system.stdout == 'systemd') or (mongodb_is_systemd | default(false) | bool) }}"
-    mongodb_is_container: "{{ ansible_facts['virtualization_type'] | default('') in ['docker', 'container', 'podman'] }}"
+- ansible.builtin.include_tasks: discovery.yml
+  tags: [mongodb_discovery, mongodb_system, mongodb_all]
 
 - ansible.builtin.include_tasks: install.yml
-  tags: [mongodb_install, mongodb_all]
+  tags: [mongodb_install, mongodb_system, mongodb_all]
 
 - ansible.builtin.include_tasks: thp.yml
   when: mongodb_thp and not mongodb_is_container
-  tags: [mongodb_thp, mongodb_all]
+  tags: [mongodb_thp, mongodb_system, mongodb_all]
 
 - ansible.builtin.include_tasks: numa.yml
   when: mongodb_numa
-  tags: [mongodb_numa, mongodb_all]
+  tags: [mongodb_numa, mongodb_system, mongodb_all]
 
 - ansible.builtin.include_tasks: keyfile.yml
   when:
     - host_count | int != 1
     - mongodb_security.keyFile is defined
-  tags: [mongodb_keyfile, mongodb_all]
+  tags: [mongodb_keyfile, mongodb_replicaset, mongodb_all]
 
 - ansible.builtin.include_tasks: user_init.yml
   when:
-    - set_user.changed
+    - (set_user is defined and set_user.changed) or (mongodb_user_init_force | default(false))
     - mongodb_manage_service | default(true) | bool
-  tags: [mongodb_user_init, mongodb_all]
+  tags: [mongodb_user_init, mongodb_system, mongodb_all]
 
 - ansible.builtin.include_tasks: cluster.yml
   when: host_count | int != 1
-  tags: [mongodb_cluster, mongodb_all]
+  tags: [mongodb_cluster, mongodb_replicaset, mongodb_arbiter, mongodb_all]
 
 - ansible.builtin.include_tasks: sharding.yml
   when: mongodb_sharding_role | default('') != ''
-  tags: [mongodb_sharding, mongodb_all]
+  tags: [mongodb_sharding, mongodb_shard, mongodb_all]
 
 - ansible.builtin.include_tasks: tls.yml
-  tags: [mongodb_tls, mongodb_all]
+  tags: [mongodb_tls, mongodb_system, mongodb_security, mongodb_all]
 
 - ansible.builtin.include_tasks: config.yml
-  tags: [mongodb_config, mongodb_all]
+  tags: [mongodb_config, mongodb_system, mongodb_all]
 
 - ansible.builtin.include_tasks: user.yml
   when:
     - mongodb_user | length > 0
     - host_count | int == 1 or mongodb_primary
-  tags: [mongodb_user, mongodb_all]
+  tags: [mongodb_user, mongodb_security, mongodb_all]
 
 - ansible.builtin.include_tasks: backup.yml
   when:
     - mongodb_backup.enabled | default(false) | bool
     - mongodb_manage_service | default(true) | bool
-  tags: [mongodb_backup, mongodb_all]
+  tags: [mongodb_backup, mongodb_system, mongodb_all]

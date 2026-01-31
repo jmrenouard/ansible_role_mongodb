@@ -3,7 +3,11 @@
 # Description: Managed by doc-sync workflow
 
 ---
+- name: Discovery inclusion
+  ansible.builtin.include_tasks: discovery.yml
+
 # Ansible Tasks for MongoDB Clustered setup
+
 - name: cluster | ensure mongod is started (systemd)
   ansible.builtin.service:
     name: mongod

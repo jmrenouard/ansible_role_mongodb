@@ -1,0 +1,20 @@
+# Example of custom installation tasks for MongoDB
+# This can be used for offline installation or using a local repository/proxy
+---
+- name: install_custom | Show warning about alternative installation
+  ansible.builtin.debug:
+    msg: "Performing alternative MongoDB installation via {{ mongodb_install_custom_tasks }}"
+# Example: Installing from a local directory or HTTP proxy
+# - name: install_custom | Download binaries from local proxy
+#   ansible.builtin.get_url:
+#     url: "http://local-proxy/mongodb-linux-x86_64-{{ mongodb_version }}.tgz"
+#     dest: "/tmp/mongodb.tgz"
+
+# Example: Manual installation of RPMs
+# - name: install_custom | Install local RPMs
+#   ansible.builtin.dnf:
+#     name:
+#       - /tmp/mongodb-org-server.rpm
+#       - /tmp/mongodb-org-database.rpm
+#     state: present
+#     disable_gpg_check: true
