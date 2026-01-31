@@ -7,7 +7,8 @@ mongodb_repo: true
 mongodb_version: 6.0
 mongodb_edition: org # org or enterprise
 mongodb_pymongo_version: 4.7.2
-mongodb_install_custom_playbook: "" # Path to custom playbook for alternative installation
+mongodb_install_standard: true # Whether to use standard repository and package installation
+mongodb_install_custom_tasks: "" # Path to custom task file for alternative installation
 
 # Apply production recommendations, see readme
 mongodb_thp: true
@@ -58,7 +59,8 @@ mongodb_auditlog: ""
 mongodb_snmp: ""
 
 # --- TLS/SSL Configuration
-mongodb_tls_custom_playbook: "" # Path to custom playbook for alternative TLS certificate management
+mongodb_tls_standard: true # Whether to use standard certificate generation
+mongodb_tls_custom_tasks: "" # Path to custom task file for alternative TLS certificate management
 mongodb_tls_generate_certs: false
 mongodb_tls_dir: /etc/ssl/mongodb
 mongodb_tls_ca_cert: "{{ mongodb_tls_dir }}/mongodb-ca.crt"

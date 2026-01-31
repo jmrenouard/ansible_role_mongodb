@@ -1,0 +1,5 @@
+# Example of custom SSL/TLS tasks
+---
+- name: tls_custom | Show message
+  ansible.builtin.debug:
+    msg: "Custom TLS tasks running..."

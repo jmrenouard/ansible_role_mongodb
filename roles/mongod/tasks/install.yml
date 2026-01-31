@@ -6,20 +6,16 @@
 - name: Discovery inclusion
   ansible.builtin.include_tasks: discovery.yml
 
-- name: install | custom playbook execution
-  ansible.builtin.command: "ansible-playbook {{ mongodb_install_custom_playbook }}"
-  delegate_to: localhost
-  run_once: true
-  register: custom_install_result
-  changed_when: custom_install_result.rc == 0
-  when: mongodb_install_custom_playbook | default('') != ''
+- name: install | custom tasks inclusion
+  ansible.builtin.include_tasks: "{{ mongodb_install_custom_tasks }}"
+  when: mongodb_install_custom_tasks | default('') != ''
 
 - name: install | repo gpg key
   ansible.builtin.rpm_key:
     key: https://www.mongodb.org/static/pgp/server-{{ mongodb_major_version | default(mongodb_version) }}.asc
   when:
     - mongodb_repo
-    - mongodb_install_custom_playbook | default('') == ''
+    - mongodb_install_standard | bool
 
 - name: install | repo
   ansible.builtin.yum_repository:
@@ -37,14 +33,14 @@
     gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongodb_major_version | default(mongodb_version) }}.asc
   when:
     - mongodb_repo
-    - mongodb_install_custom_playbook | default('') == ''
+    - mongodb_install_standard | bool
 
 - name: install | group mongod
   ansible.builtin.group:
     name: mongod
     gid: 28
     system: true
-  when: mongodb_install_custom_playbook | default('') == ''
+  when: mongodb_install_standard | bool
 
 - name: install | user mongod
   ansible.builtin.user:
@@ -57,7 +53,7 @@
     create_home: false
     shell: /sbin/nologin
   register: set_user
-  when: mongodb_install_custom_playbook | default('') == ''
+  when: mongodb_install_standard | bool
 
 - name: install | dependencies
   ansible.builtin.dnf:
@@ -65,13 +61,13 @@
       - python3-devel
       - python3-pip
     state: present
-  when: mongodb_install_custom_playbook | default('') == ''
+  when: mongodb_install_standard | bool
 
 - name: install | mongo edition {{ mongodb_edition }}
   ansible.builtin.dnf:
     name: mongodb-{{ mongodb_edition }}
     state: present
-  when: mongodb_install_custom_playbook | default('') == ''
+  when: mongodb_install_standard | bool
 
 - name: install | data folder
   ansible.builtin.file:

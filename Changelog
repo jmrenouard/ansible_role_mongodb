@@ -1,5 +1,12 @@
 # @Changelog
 
+## 1.5.5 (2026-01-31)
+
+* feat: refined custom hooks architecture to be simpler and more granular.
+* feat: add `mongodb_install_standard` and `mongodb_tls_standard` flags to toggle default logic.
+* feat: use simple `include_tasks` for `mongodb_install_custom_tasks` and `mongodb_tls_custom_tasks`.
+* feat: add simple example task files in `roles/mongod/tasks/`.
+
 ## 1.5.4 (2026-01-31)
 
 * feat: refactor custom hooks to support independent `playbooks/` instead of task files.

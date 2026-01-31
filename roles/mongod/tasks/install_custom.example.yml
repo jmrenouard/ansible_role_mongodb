@@ -1,0 +1,5 @@
+# Example of custom installation tasks
+---
+- name: install_custom | Show message
+  ansible.builtin.debug:
+    msg: "Custom installation tasks running..."
