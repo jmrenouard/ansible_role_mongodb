@@ -1,5 +1,9 @@
 # @Changelog
 
+## 1.5.6 (2026-01-31)
+
+* fix: replace broken `gofrolist/ansible-molecule-action` with native Python/Molecule setup in GitHub Workflows.
+
 ## 1.5.5 (2026-01-31)
 
 * feat: refined custom hooks architecture to be simpler and more granular.
