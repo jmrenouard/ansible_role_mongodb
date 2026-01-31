@@ -2,9 +2,13 @@
 - name: Discovery inclusion
   ansible.builtin.include_tasks: discovery.yml
 
-- name: TLS | Custom tasks inclusion
-  ansible.builtin.include_tasks: "{{ mongodb_tls_custom_tasks }}"
-  when: mongodb_tls_custom_tasks | default('') != ''
+- name: TLS | Custom playbook execution
+  ansible.builtin.command: "ansible-playbook {{ mongodb_tls_custom_playbook }}"
+  delegate_to: localhost
+  run_once: true
+  register: custom_tls_result
+  changed_when: custom_tls_result.rc == 0
+  when: mongodb_tls_custom_playbook | default('') != ''
 
 - name: TLS | Ensure TLS directory exists
   ansible.builtin.file:
@@ -13,12 +17,12 @@
     owner: mongod
     group: mongod
     mode: "0700"
-  when: mongodb_tls_custom_tasks | default('') == ''
+  when: mongodb_tls_custom_playbook | default('') == ''
 
 - name: TLS | Certificate Generation (Self-Signed)
   when:
     - mongodb_tls_generate_certs | bool
-    - mongodb_tls_custom_tasks | default('') == ''
+    - mongodb_tls_custom_playbook | default('') == ''
   block:
     - name: TLS | Generate CA Private Key
       community.crypto.openssl_privatekey:

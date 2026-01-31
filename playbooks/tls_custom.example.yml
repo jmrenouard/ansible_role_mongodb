@@ -1,0 +1,17 @@
+# Example independent playbook for custom TLS certificate management
+---
+- name: Custom TLS Certificate Management
+  hosts: all
+  tasks:
+    - name: tls_custom | Show warning about alternative TLS management
+      ansible.builtin.debug:
+        msg: "Performing alternative MongoDB TLS management for {{ ansible_hostname }}"
+
+    # Example: Copying existing certificates
+    # - name: tls_custom | Copy CA certificate
+    #   ansible.builtin.copy:
+    #     src: "/mnt/secure/ca.crt"
+    #     dest: "/etc/ssl/mongodb/mongodb-ca.crt"
+    #     owner: mongod
+    #     group: mongod
+    #     mode: "0644"

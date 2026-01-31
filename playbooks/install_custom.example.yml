@@ -1,0 +1,17 @@
+# Example independent playbook for custom MongoDB installation
+---
+- name: Custom MongoDB Installation
+  hosts: all
+  tasks:
+    - name: install_custom | Show warning about alternative installation
+      ansible.builtin.debug:
+        msg: "Performing alternative MongoDB installation for {{ ansible_hostname }}"
+
+    # Example: Manual installation of RPMs
+    # - name: install_custom | Install local RPMs
+    #   ansible.builtin.dnf:
+    #     name:
+    #       - /tmp/mongodb-org-server.rpm
+    #       - /tmp/mongodb-org-database.rpm
+    #     state: present
+    #     disable_gpg_check: true
