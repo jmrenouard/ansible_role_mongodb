@@ -39,7 +39,7 @@ platforms:
     pull: true
     command: "/usr/sbin/init"
     volumes:
-      - "/s../../rolescgroup:/sys/fs/cgroup:rw"
+      - "/sys/fs/cgroup:/sys/fs/cgroup:rw"
     tmpfs:
       - /run
       - /tmp
@@ -56,7 +56,7 @@ platforms:
     pull: true
     command: "/usr/sbin/init"
     volumes:
-      - "/s../../rolescgroup:/sys/fs/cgroup:rw"
+      - "/sys/fs/cgroup:/sys/fs/cgroup:rw"
     tmpfs:
       - /run
       - /tmp
@@ -73,7 +73,7 @@ platforms:
     pull: true
     command: "/usr/sbin/init"
     volumes:
-      - "/s../../rolescgroup:/sys/fs/cgroup:rw"
+      - "/sys/fs/cgroup:/sys/fs/cgroup:rw"
     tmpfs:
       - /run
       - /tmp
@@ -90,7 +90,7 @@ platforms:
     pull: true
     command: "/usr/sbin/init"
     volumes:
-      - "/s../../rolescgroup:/sys/fs/cgroup:rw"
+      - "/sys/fs/cgroup:/sys/fs/cgroup:rw"
     tmpfs:
       - /run
       - /tmp
@@ -107,7 +107,7 @@ platforms:
     pull: true
     command: "/usr/sbin/init"
     volumes:
-      - "/s../../rolescgroup:/sys/fs/cgroup:rw"
+      - "/sys/fs/cgroup:/sys/fs/cgroup:rw"
     tmpfs:
       - /run
       - /tmp
