@@ -90,9 +90,12 @@ mongodb_replication_role=secondary
 
 ---
 
-## Replica Set PSS + Arbiter
+## Odd-Node Quorum Requirement & Custom 5-Node PSA Topology
 
-A 4-node configuration (3 data nodes + 1 arbiter) or similar custom topologies.
+> [!IMPORTANT]
+> `roles/mongod/tasks/assert.yml` enforces `host_count | int % 2 != 0` when deploying a replica set. Even-numbered plays (such as 2 or 4 hosts) fail assertion checks to preserve election quorum.
+
+Example 5-node PSA cluster (1 primary, 3 data secondaries, 1 arbiter):
 
 ```ini
 [mongodb_primary]
@@ -101,35 +104,17 @@ mongo-01.example.com
 [mongodb_secondary]
 mongo-02.example.com
 mongo-03.example.com
+mongo-04.example.com
 
 [mongodb_arbiter]
-mongo-04.example.com
-
-[mongodb_primary:vars]
-mongodb_replication_role=primary
-
-[mongodb_secondary:vars]
-mongodb_replication_role=secondary
-
-[mongodb_arbiter:vars]
-mongodb_replication_role=arbiter
-```ini
-[mongodb_primary]
-mongo-04.example.com
- 
-[mongodb_secondary]
 mongo-05.example.com
-mongo-06.example.com
- 
-[mongodb_arbiter]
-mongo-07.example.com
- 
+
 [mongodb_primary:vars]
 mongodb_replication_role=primary
- 
+
 [mongodb_secondary:vars]
 mongodb_replication_role=secondary
- 
+
 [mongodb_arbiter:vars]
 mongodb_replication_role=arbiter
 ```
@@ -138,19 +123,19 @@ mongodb_replication_role=arbiter
 
 ## Sharded Cluster
 
-Example configuration for a sharded cluster with Config Servers, Shards, and mongos.
+Example configuration for a sharded cluster with Config Servers, Shards, and `mongos` (matching `roles/mongod/molecule/sharding-ubi9/`):
 
 ```ini
 [configsvr]
-cs-01.example.com mongodb_sharding_role=configsvr
-cs-02.example.com mongodb_sharding_role=configsvr
-cs-03.example.com mongodb_sharding_role=configsvr
- 
+cs-01.example.com mongodb_sharding_role=configsvr mongodb_replication_role=primary
+cs-02.example.com mongodb_sharding_role=configsvr mongodb_replication_role=secondary
+cs-03.example.com mongodb_sharding_role=configsvr mongodb_replication_role=secondary
+
 [shardA]
-sa-01.example.com mongodb_sharding_role=shardsvr
-sa-02.example.com mongodb_sharding_role=shardsvr
-sa-03.example.com mongodb_sharding_role=shardsvr
- 
+sa-01.example.com mongodb_sharding_role=shardsvr mongodb_replication_role=primary
+sa-02.example.com mongodb_sharding_role=shardsvr mongodb_replication_role=secondary
+sa-03.example.com mongodb_sharding_role=shardsvr mongodb_replication_role=secondary
+
 [mongos]
 router-01.example.com mongodb_sharding_role=mongos
 ```

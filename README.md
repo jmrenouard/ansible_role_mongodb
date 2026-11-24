@@ -16,17 +16,19 @@ An Ansible role that installs, configures and manages MongoDB for EL 8 and EL 9.
 
 - Applies recommended production notes, e.g. [numa](https://docs.mongodb.com/manual/administration/production-notes/#configuring-numa-on-linux)
   and [disables transparent hugepages](https://docs.mongodb.com/manual/tutorial/transparent-huge-pages/)
-- Bootstrapping a cluster in a PSA architecture (primary, secondary, arbiter)
+- Bootstrapping a replica set in a PSA (primary, secondary, arbiter) or PSS (primary, secondary, secondary) architecture
   - includes cluster verification
 - Orchestrating a Sharded Cluster (Config Servers, Shards, mongos)
-- Secures connection by encrypting traffic via a keyfile, auto generated
-- Install either Community or the Enterprise edition
-- Easily to configure, with a future proof configuration method
-- Update playbook, supports patch releases
-- Add user defined users
-- Add user defined databases
-- Backup with mongodump
-- Logrotation, set from within mongo
+- Automated self-signed TLS/SSL certificate generation (`mongodb_tls_generate_certs`)
+- Secures intra-cluster communication via an auto-generated keyfile
+- Install either Community (`org`) or Enterprise (`enterprise`) edition
+- Declarative `/etc/mongod.conf` dictionary configuration
+- Update playbook supporting patch releases (`playbooks/update.yml`)
+- Add user defined users and databases
+- Backup with `mongodump` via cron
+- Logrotation references from MongoDB docs
+
+See [Documentation Index](docs/index.md) and [Role Parameters](documentation/PARAMETERS.md) for the complete Diataxis documentation suite.
 
 ## Requirements
 
@@ -51,7 +53,7 @@ The version and edition can be set. By default, the official mongodb repository 
 
 ```yaml
 mongodb_repo: true
-mongodb_version: 5.0
+mongodb_version: 6.0
 mongodb_edition: org  # or enterprise
 mongodb_pymongo_version: 4.7.2
 ```
@@ -68,7 +70,7 @@ files." Such tasks are out of scope for this role.
 There are tasks which this role does apply if set, these are:
 
 - Start MongoDB with numactl, set in systemd file
-- Disabling zone reclaimm
+- Disabling zone reclaim
 - Disabling transparent hugepages
 - Configure tuned profile
 
@@ -267,10 +269,10 @@ set in cron.
 
 The backup scripts are **only** placed on the first applicable secondary node:
 
-```text
-- host1 [primary]   <-- backup scripts absent here
-- host2 [secondary] <-- backup scripts placed here
-- host3 [secondary] <-- backup scripts absent here
+```mermaid
+flowchart LR
+  P["host1 - primary: no backup cron"] --> S1["host2 - first secondary: mongodump cron active"]
+  P --> S2["host3 - secondary: no backup cron"]
 ```
 
 ```yaml
@@ -315,16 +317,16 @@ Ensure settings are configured properly.
 
 ### Playbooks
 
-The role providing several utility playbooks in the `playbooks/` directory:
+The repository includes four utility playbooks in the `playbooks/` directory:
 
+- `playbooks/install_mongodb.yml`: Installs and configures MongoDB using `roles/mongod`.
 - `playbooks/update.yml`: Orchestrates a rolling update of a MongoDB cluster
   (Arbiter -> Secondaries -> Primary). It ensures cluster health between each
   step and performs primary step-down when upgrading the primary node.
 - `playbooks/reset.yml`: Removes all MongoDB-related files, configuration, and
   packages to start fresh. **WARNING**: This action is destructive and will
   delete all data in `{{ mongodb_storage.dbPath }}`.
-- `playbooks/scale.yml`: (Experimental) Logic for adding nodes to a cluster.
-  Handles internal reconfiguration and replica set membership.
+- `playbooks/scale.yml`: Experimental placeholder playbook documenting planned scaling logic.
 
 To run a utility playbook:
 
@@ -335,15 +337,15 @@ ansible-playbook -i my_inventory playbooks/update.yml
 ## Inventory Examples
 
 A variety of inventory configuration examples can be found in the
-[Inventory Examples](file:///home/jmren/GIT_REPOS/ansible_role_mongodb/documentation/inventory_examples.md)
+[Inventory Examples](documentation/inventory_examples.md)
 document.
 
 It covers:
 
 - Single Instance (Community & Enterprise)
 - 3-node Replica Set (PSA & PSS)
-- 5-node Replica Set (PSS)
-- Custom Topologies (PSA with multiple secondaries)
+- 5-node Replica Set (PSS & PSA)
+- Sharded Cluster (`configsvr`, `shardsvr`, `mongos`)
 
 ## System Preparation
 
@@ -383,22 +385,19 @@ mongodb_user:
     update_password: on_create
 ```
 
-## SSL Management
+## SSL/TLS Management
 
-SSL/TLS can be fully configured within the `mongodb_net` and `mongodb_security`
-variables. This role assumes certificates are already present on the target
-filesystem (e.g., via a separate SSL role).
+TLS can be enabled through `mongodb_tls_generate_certs: true` (self-signed CA and node PEM generation in `roles/mongod/tasks/tls.yml`) or by supplying existing certificates configured via `mongodb_net` and `mongodb_security`.
+
+> [!NOTE]
+> `roles/mongod/templates/mongod.conf.j2` emits a `net.tls` block whenever `mongodb_tls_generate_certs` is `true` or `mongodb_net.tls` / `mongodb_net.ssl` is set. Avoid defining a nested `mongodb_net.tls` dictionary simultaneously if you want to prevent duplicate `tls:` keys in `/etc/mongod.conf`.
 
 Key configuration parameters:
 
 ```yaml
-mongodb_net:
-  ssl:
-    mode: requireSSL                # disable/allowSSL/preferSSL/requireSSL
-    PEMKeyFile: /etc/ssl/mongodb.pem # concatenation of private key and cert
-    CAFile: /etc/ssl/ca.pem          # Root CA certificate
-    allowConnectionsWithoutCertificates: false
-    allowInvalidCertificates: false
+mongodb_tls_generate_certs: true
+mongodb_tls_dir: /etc/ssl/mongodb
+mongodb_tls_allow_no_cert: true
 ```
 
 ## KMIP Management
@@ -419,47 +418,26 @@ mongodb_security:
 
 ## Updating
 
-```yaml
-mongodb_state: latest
+Run `playbooks/update.yml` to apply patch upgrades across a standalone host or replica set (`dnf` `state: latest`):
 
-# setting new variables is possible when updating mongo
-mongodb_net:
-  new_variable: true
+```bash
+ansible-playbook -i my_inventory playbooks/update.yml
 ```
 
-While updating, ensure applications don't write to mongo. Also, ensure a
-backup is created beforehand.
+While updating, ensure applications pause writes and take a backup beforehand.
 
-If a replication set is active, the cluster should be maintained after the
-update. As taken
-[from the docs](https://docs.mongodb.com/manual/tutorial/upgrade-revision/),
-the following steps are executed:
+If a replica set is active, `playbooks/update.yml` coordinates a rolling update following the MongoDB upgrade sequence (Arbiter -> Secondaries -> Primary step-down):
 
-```text
- - verify cluster health, if ok, continue
-
- - shutdown mongo application on arbiter if present
- - update mongo on arbiter
- - place config on arbiter
- - start mongo on arbiter
-
- - wait until cluster health is ok
-
- - shutdown mongo application on a secondary
- - update mongo on secondary
- - place config on secondary
- - start mongo on secondary
-
- - wait until cluster health is ok
-
- - repeat for remaining secondaries
-
- - step down primary
- - update mongo on original primary
- - place config on original primary
- - start mongo on original primary
-
- - wait until cluster health is ok
+```mermaid
+flowchart TD
+  H0["1. Verify cluster health"] --> A1["2. Arbiter (if present): stop, upgrade, config, start"]
+  A1 --> H1["3. Wait for cluster health"]
+  H1 --> S1["4. Next secondary: stop, upgrade, config, start"]
+  S1 --> H2["5. Wait for cluster health"]
+  H2 -->|More secondaries| S1
+  H2 -->|All secondaries done| P1["6. Step down primary"]
+  P1 --> P2["7. Original primary: upgrade, config, start"]
+  P2 --> H3["8. Verify final cluster health"]
 ```
 
 ### Updating a sharded environment
@@ -477,20 +455,9 @@ ansible-playbook -i my_inventory playbooks/reset.yml
 > [!WARNING]
 > This will delete all data in `{{ mongodb_storage.dbPath }}` and remove the `mongod` package.
 
-Still in development... I am not even sure whenever I'll this functionality,
-since this is currently not even possible with mongo 5.0.
-It is not easy to configure scaling in mongo with Ansible, since the method is
-not straight forward.
+### Scaling
 
-So far, I saw that the steps should be:
-
-- If arbiter is present in configuration and on system
-  - remove arbiter from cluster
-- Add new secondary or secondaries
-- Add arbiter if configured
-
-I have tried configuring this countless amount of times, but always failed due
-to a system error. I decided to not include scaling for now.
+`playbooks/scale.yml` and `roles/mongod/tasks/scale.yml` are experimental placeholders documenting planned node-addition logic (removing an arbiter, adding secondaries, then re-adding the arbiter). Active cluster scaling automation is not yet enabled in `roles/mongod/tasks/cluster.yml`.
 
 ## Example playbook
 
@@ -500,9 +467,10 @@ to a system error. I decided to not include scaling for now.
     - host_mongodb_secondary
     - host_mongodb_arbiter
   roles:
-    - mongodb
-  any_error_true: true
+    - mongod
+  any_errors_fatal: true
   vars:
+    mongodb_version: "6.0"
     mongodb_restart_config: true
     mongodb_restart_seconds: 8
     mongodb_thp: true
@@ -514,6 +482,9 @@ to a system error. I decided to not include scaling for now.
       keyFile: /etc/keyfile_mongo
     mongodb_admin_pass: something
     mongodb_adminuser_pass: something
+    mongodb_backup:
+      enabled: true
+      pass: something
     mongodb_net:
       bindIp: 0.0.0.0
       port: 27017
@@ -530,7 +501,7 @@ to a system error. I decided to not include scaling for now.
         name: bob
         password: 12345
         state: present
-        update_password: on_create    
+        update_password: on_create
   pre_tasks:
     # ensure this is done
     # - name: ensure hosts can connect to each other via hostnames
@@ -547,13 +518,14 @@ This role is tested using Molecule against Red Hat Universal Base Image (UBI) 8 
 
 | Scenario | Distribution | Nodes | Architecture | Mode |
 | :--- | :--- | :--- | :--- | :--- |
-| **default** | UBI 9 | 1 | Standalone | No systemd |
+| **default** | UBI 9 | 1 | Standalone | No systemd (`mongodb_manage_service: false`) |
 | **default-ubi8** | UBI 8 | 1 | Standalone | Systemd |
 | **replicaset-psa-ubi8** | UBI 8 | 3 | PSA | Systemd |
 | **replicaset-psa-ubi9** | UBI 9 | 3 | PSA | No systemd |
 | **replicaset-pss-ubi8** | UBI 8 | 5 | PSS | Systemd |
 | **replicaset-pss-ubi9** | UBI 9 | 5 | PSS | No systemd |
-| **sharding-ubi9** | UBI 9 | 10 | Sharded Cluster | No systemd |
+| **sharding-ubi9** | UBI 9 | 10 | Sharded Cluster | No systemd (`mongodb_manage_service: false`) |
+| **tls-ubi9** | UBI 9 | 1 | TLS Certificates | Simulated systemd (`mongodb_manage_service: false`) |
 
 To run tests:
 

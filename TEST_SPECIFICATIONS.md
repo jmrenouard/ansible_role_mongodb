@@ -2,18 +2,20 @@
 
 This document outlines the roadmap for expanding the Molecule testing suite to ensure high-density, production-ready MongoDB orchestration.
 
-## 🚀 Tier 1: Cluster Orchestration (High Priority)
+## Tier 1: Cluster Orchestration (High Priority)
 
-### 🧩 [NEW] `sharding-ubi9`
+### [IMPLEMENTED] `sharding-ubi9`
 
-**Rationale**: Sharding is critical for large-scale MongoDB deployments. Currently, coverage is limited to Replica Sets.
+**Status**: Implemented in `roles/mongod/molecule/sharding-ubi9/`.
 
-- **Components**: Config Servers, Query Routers (mongos), Shard Nodes.
-- **Verification**: Ensure sharding initialization, shard addition, and balancer status.
-- **Complexity**: High
-- **Impact**: Scalability
+- **Components**: 3 Config Servers (`configsvr`), 6 Shard Nodes (`shardA`, `shardB`), 1 Query Router (`mongos`).
+- **Verification**: Verifies `mongod`/`mongos` processes and `sh.status()` shard registration (`shardARS`, `shardBRS`).
 
-### 🔄 [NEW] `rolling-upgrade-ubi9`
+### [IMPLEMENTED - CERT CHECKS] `tls-ubi9`
+
+**Status**: Implemented in `roles/mongod/molecule/tls-ubi9/` (generates CA and node certs; live `mongosh --tls` probe is skipped when `mongodb_manage_service: false`).
+
+### [NEW] `rolling-upgrade-ubi9`
 
 **Rationale**: Validate zero-downtime path from MongoDB 5.0 to 6.0.
 

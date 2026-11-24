@@ -1,29 +1,37 @@
-# 🐳 UBI 8.10 Docker Fleet for Ansible Testing
+# UBI 9 Docker Fleet for Ansible Testing
 
-This directory contains a containerized environment based on **Red Hat Universal Base Image 8.10**, designed to test the MongoDB Ansible role in a multi-node topology.
+This directory contains a containerized lab based on **Red Hat Universal Base Image 9 (`redhat/ubi9:9.4`)** to test the `roles/mongod` Ansible role in a 3-node topology.
 
-## 🚀 Quick Start
+## Prerequisites
+
+SSH keys (`docker/id_rsa` and `docker/id_rsa.pub`) are gitignored. Generate a local lab key pair in `docker/` before running `make build`:
+
+```bash
+ssh-keygen -t rsa -N "" -f id_rsa
+```
+
+## Quick Start
 
 ```bash
 # Build image, create network, and start 3 nodes
 make
 
 # Manage the fleet
-make build    # Build the UBI8 image
+make build    # Build the container image (tagged in Makefile as IMAGE)
 make network  # Create the internal bridge network (mongo-net)
 make run      # Instantiate 3 containers
 make stop     # Stop and remove containers
 make clean    # Remove containers, network, and image
 ```
 
-## ⚙️ Infrastructure Details
+## Infrastructure Details
 
 | Component | Description |
 |-----------|-------------|
-| **Base Image** | `registry.access.redhat.com/ubi8/ubi:8.10` |
+| **Base Image** | `redhat/ubi9:9.4` (defined in `docker/Dockerfile`) |
 | **Process Manager** | `supervisord` (managing `sshd`) |
 | **Network** | `mongo-net` (bridge) |
-| **SSH Access** | Root login enabled with `id_rsa` or `rootpass` |
+| **SSH Access** | Root login enabled with generated `id_rsa` or preset `rootpass` |
 
 ## 🌐 Port Mapping
 
