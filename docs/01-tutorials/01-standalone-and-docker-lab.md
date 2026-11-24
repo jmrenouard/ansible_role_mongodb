@@ -33,13 +33,13 @@ docker run -d --name mongodb-node-3 --network mongo-net -p 2223:22 -p 27019:2701
 
 ## Step 2: Run the Provisioning Script
 
-Deploy `roles/mongod` against `docker/inventory.yml` using `docker/run_install.sh`:
+Deploy `roles/mongod` against `docker/inventory.yml` using `docker/run_install.sh` (pass a non-default backup secret so `assert.yml` passes even without `group_vars`):
 
 ```bash
-./run_install.sh
+./run_install.sh -e '{"mongodb_backup":{"pass":"lab_backup_secret"}}'
 ```
 
-`run_install.sh` generates a temporary playbook referencing role `mongod` against `mongodb_cluster`, runs `ansible-playbook -v -i inventory.yml`, and removes the temporary playbook when done.
+`run_install.sh` generates a temporary playbook referencing role `mongod` against `mongodb_cluster`, forwards CLI arguments via `"$@"`, runs `ansible-playbook -v -i inventory.yml`, and removes the temporary playbook when done.
 
 ## Step 3: Verify Container Process State
 
@@ -58,11 +58,13 @@ sshd                             RUNNING   pid 8, uptime 0:02:10
 
 ## Step 4: Inspect Single-Node Behavior with a One-Host Inventory
 
-To test standalone mode (`host_count == 1`), limit Ansible execution to one host and keep `mongodb_replication_role` empty:
+To test standalone mode (`host_count == 1`), return to the repository root, point `--private-key` at `docker/id_rsa`, limit execution to one host, and override `mongodb_replication_role`, `mongodb_security`, and `mongodb_backup`:
 
 ```bash
 cd ..
-ansible-playbook -i docker/inventory.yml playbooks/install_mongodb.yml --limit mongodb-node-1 -e "mongodb_replication_role=''" -e "mongodb_security=''"
+ansible-playbook -i docker/inventory.yml --private-key docker/id_rsa playbooks/install_mongodb.yml \
+  --limit mongodb-node-1 -e "mongodb_replication_role=''" -e "mongodb_security=''" \
+  -e '{"mongodb_backup":{"pass":"lab_backup_secret"}}'
 ```
 
 When `host_count | int == 1`, `roles/mongod/tasks/assert.yml` verifies `mongodb_replication_role == ''` and skips `cluster.yml` and `keyfile.yml`.

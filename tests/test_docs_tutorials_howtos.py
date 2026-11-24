@@ -324,6 +324,10 @@ class TestDocsTutorialsHowtos(unittest.TestCase):
             self.assertRegex(docker_mk, re.compile(rf"^{target}:", re.MULTILINE))
             self.assertIn(f"make {target}", ref_doc)
 
+        tut1 = (DOCS_DIR / "01-tutorials/01-standalone-and-docker-lab.md").read_text(encoding="utf-8")
+        self.assertIn('--private-key docker/id_rsa', tut1)
+        self.assertIn('-e \'{"mongodb_backup":{"pass":"lab_backup_secret"}}\'', tut1)
+
 
 if __name__ == "__main__":
     unittest.main()
